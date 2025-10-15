@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { useCache } from '@/hooks/use-cache';
@@ -83,6 +83,7 @@ export default function AccountManagementPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const hasFetchedRef = useRef(false); // Track xem đã fetch chưa
   const [createUserData, setCreateUserData] = useState<CreateUserData>({
     name: '',
     email: '',
@@ -102,10 +103,13 @@ export default function AccountManagementPage() {
   }, []);
 
   useEffect(() => {
-    if (session?.user?.role === 'admin') {
-      cache.clearCache(); fetchUsers(true);
+    // Chỉ fetch 1 lần duy nhất khi user là admin
+    if (session?.user?.role === 'admin' && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
+      fetchUsers(false); // Sử dụng cache nếu có
     }
-  }, [session]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.role]);
 
   const fetchUsers = async (forceRefresh = false) => {
     try {
@@ -163,7 +167,8 @@ export default function AccountManagementPage() {
           phone: '',
           role: 'nhanVien'
         });
-        cache.clearCache(); fetchUsers(true);
+        cache.clearCache();
+        fetchUsers(true);
       } else {
         const error = await response.json();
         toast.error(error.message || 'Tạo tài khoản thất bại');
@@ -190,7 +195,8 @@ export default function AccountManagementPage() {
         toast.success('Cập nhật tài khoản thành công');
         setIsEditDialogOpen(false);
         setSelectedUser(null);
-        cache.clearCache(); fetchUsers(true);
+        cache.clearCache();
+        fetchUsers(true);
       } else {
         const error = await response.json();
         toast.error(error.message || 'Cập nhật tài khoản thất bại');

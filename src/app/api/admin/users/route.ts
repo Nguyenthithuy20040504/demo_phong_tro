@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import NguoiDung from '@/models/NguoiDung';
-import bcrypt from 'bcryptjs';
 
 export async function GET() {
   try {
@@ -47,21 +46,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email đã được sử dụng' }, { status: 400 });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Create user
+    // Create user (password will be hashed by the model's pre-save hook)
     const newUser = new NguoiDung({
       // Vietnamese fields
       ten: name,
       email,
-      matKhau: hashedPassword,
+      matKhau: password,
       soDienThoai: phone,
       vaiTro: role,
       trangThai: 'hoatDong',
       // English fields
       name,
-      password: hashedPassword,
+      password: password,
       phone,
       role,
       isActive: true,
