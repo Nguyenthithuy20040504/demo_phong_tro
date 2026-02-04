@@ -4,6 +4,7 @@ import { NextAuthOptions } from 'next-auth';
 import dbConnect from './mongodb';
 import NguoiDung from '@/models/NguoiDung';
 import { compare } from 'bcryptjs';
+import KhachThue from '@/models/KhachThue';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -26,6 +27,11 @@ export const authOptions: NextAuthOptions = {
             trangThai: 'hoatDong'
           }).select('+matKhau');
 
+          const client = await KhachThue.findOne({ 
+            email: credentials.email.toLowerCase(),
+            trangThai: 'dangThue'
+          }).select('+matKhau');
+
           if (!user) {
             return null;
           }
@@ -43,6 +49,11 @@ export const authOptions: NextAuthOptions = {
             role: user.vaiTro,
             phone: user.soDienThoai,
             avatar: user.anhDaiDien,
+            idclient: client._id.toString(),
+            emailclient: client.email,
+            nameclient: client.hoTen,
+            roleclient: client.vaiTro,
+            phoneclient: client.soDienThoai,
           };
         } catch (error) {
           console.error('Auth error:', error);
@@ -56,11 +67,13 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user}) {
       if (user) {
         token.role = user.role;
         token.phone = user.phone;
         token.avatar = user.avatar;
+      //  token.client= client.clientrole;
+      
       }
       return token;
     },

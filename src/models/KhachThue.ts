@@ -18,6 +18,7 @@ export interface IKhachThue extends Document {
   trangThai: 'dangThue' | 'daTraPhong' | 'chuaThue';
   ngayTao: Date;
   ngayCapNhat: Date;
+  vaiTro: 'khachThue';
 }
 
 const AnhCCCDSchema = new Schema({
@@ -86,6 +87,10 @@ const KhachThueSchema = new Schema<IKhachThue>({
     type: String,
     select: false, // Không trả về mật khẩu khi query
     minlength: [6, 'Mật khẩu phải có ít nhất 6 ký tự']
+  },
+  vaiTro:{
+    type: String,
+    default: 'khachThue'
   },
   trangThai: {
     type: String,
