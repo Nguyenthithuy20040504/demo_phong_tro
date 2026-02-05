@@ -10,6 +10,13 @@ declare module 'next-auth' {
       phone: string;
       avatar?: string;
     };
+    client: {
+      clientid: string;
+      clientemail:string;
+      clientname: string;
+      clientrole: string;
+      clientphone: string;
+    }
   }
 
   interface User {

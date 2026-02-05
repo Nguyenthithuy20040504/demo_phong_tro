@@ -35,7 +35,7 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginForm) => {
+/*  const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     setError('');
 
@@ -57,7 +57,38 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  };*/
+  const onSubmit = async (data: LoginForm) => {
+  setIsLoading(true);
+  setError('');
+
+  try {
+    const result = await signIn('credentials', {
+      email: data.email,
+      matKhau: data.matKhau,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      setError('Email hoặc mật khẩu không đúng');
+      return;
+    }
+
+    const session = await getSession();
+    const role = session?.user?.role;
+
+    if (role === 'khachThue') {
+      router.push('/khach-thue/dashboard');
+    } else {
+      router.push('/dashboard');
+    }
+  } catch (error) {
+    setError('Đã xảy ra lỗi, vui lòng thử lại');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-6 md:py-12 px-4 sm:px-6 lg:px-8">

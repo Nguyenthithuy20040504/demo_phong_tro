@@ -1,96 +1,106 @@
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { NextAuthOptions } from 'next-auth';
-import dbConnect from './mongodb';
-import NguoiDung from '@/models/NguoiDung';
-import { compare } from 'bcryptjs';
-import KhachThue from '@/models/KhachThue';
+import NextAuth, { type NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import dbConnect from "./mongodb";
+import NguoiDung from "@/models/NguoiDung";
+import KhachThue from "@/models/KhachThue";
+import { compare } from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: 'credentials',
+      name: "credentials",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        matKhau: { label: 'Mật khẩu', type: 'password' }
+        email: { label: "Email", type: "email" },
+        matKhau: { label: "Mật khẩu", type: "password" },
       },
+
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.matKhau) {
-          return null;
-        }
+        if (!credentials?.email || !credentials?.matKhau) return null;
 
         try {
           await dbConnect();
-          
-          const user = await NguoiDung.findOne({ 
-            email: credentials.email.toLowerCase(),
-            trangThai: 'hoatDong'
-          }).select('+matKhau');
 
-          const client = await KhachThue.findOne({ 
-            email: credentials.email.toLowerCase(),
-            trangThai: 'dangThue'
-          }).select('+matKhau');
+          const email = credentials.email.toLowerCase();
+          const matKhau = credentials.matKhau;
 
-          if (!user) {
-            return null;
+          const user = await NguoiDung.findOne({
+            email,
+            trangThai: "hoatDong",
+          }).select("+matKhau");
+
+          if (user) {
+            const ok = await user.comparePassword(matKhau);
+            if (!ok) return null;
+
+            return {
+              id: user._id.toString(),
+              email: user.email,
+              name: user.ten,
+              role: "admin",
+              phone: user.soDienThoai,
+              avatar: user.anhDaiDien ?? null,
+            };
           }
 
-          const isPasswordValid = await user.comparePassword(credentials.matKhau);
+          const client = await KhachThue.findOne({
+            email,
+            //trangThai: "dangThue",
+          }).select("+matKhau");
 
-          if (!isPasswordValid) {
-            return null;
-          }
+          if (!client) return null;
+
+          const ok =
+            typeof (client as any).comparePassword === "function"
+              ? await (client as any).comparePassword(matKhau)
+              : await compare(matKhau, (client as any).matKhau);
+
+          if (!ok) return null;
 
           return {
-            id: user._id.toString(),
-            email: user.email,
-            name: user.ten,
-            role: user.vaiTro,
-            phone: user.soDienThoai,
-            avatar: user.anhDaiDien,
-            idclient: client._id.toString(),
-            emailclient: client.email,
-            nameclient: client.hoTen,
-            roleclient: client.vaiTro,
-            phoneclient: client.soDienThoai,
+            id: client._id.toString(),
+            email: client.email,
+            name: client.hoTen,
+            role: "khachThue",
+            phone: client.soDienThoai,
+            avatar: null,
           };
         } catch (error) {
-          console.error('Auth error:', error);
+          console.error("Auth error:", error);
           return null;
         }
-      }
-    })
+      },
+    }),
   ],
+
   session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
   },
+
   callbacks: {
-    async jwt({ token, user}) {
+    async jwt({ token, user }) {
       if (user) {
-        token.role = user.role;
-        token.phone = user.phone;
-        token.avatar = user.avatar;
-      //  token.client= client.clientrole;
-      
+        token.role = (user as any).role;
+        token.phone = (user as any).phone;
+        token.avatar = (user as any).avatar;
       }
       return token;
     },
+
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.sub!;
-        session.user.role = token.role as string;
-        session.user.phone = token.phone as string;
-        session.user.avatar = token.avatar as string;
-      }
+      session.user.id = token.sub!;
+      session.user.role = token.role as string;
+      session.user.phone = token.phone as string;
+      session.user.avatar = (token.avatar as string) ?? undefined;
       return session;
-    }
+    },
   },
+
   pages: {
-    signIn: '/dang-nhap',
-    error: '/dang-nhap',
+    signIn: "/dang-nhap",
+    error: "/dang-nhap",
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 };
 
