@@ -91,8 +91,34 @@ export default function LoginPage() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-6 md:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-6 md:space-y-8">
+
+ <div className="relative min-h-screen flex items-center justify-center bg-blue-50 py-6 md:py-12 px-4 sm:px-6 lg:px-8">
+  
+ 
+  <div
+    className="absolute inset-0 pointer-events-none"
+    style={{
+      backgroundImage: "url('/backgroundlogin.svg')",
+      backgroundSize: "40%",
+      backgroundPosition: "left center",
+      backgroundRepeat: "no-repeat",
+    }}
+  />
+
+ 
+  <div
+    className="absolute inset-0 pointer-events-none"
+    style={{
+      backgroundImage: "url('/backgroundlogin.svg')",
+      backgroundSize: "40%",
+      backgroundPosition: "left center",
+      backgroundRepeat: "no-repeat",
+      transform: "scaleX(-1)",  
+      transformOrigin: "center", 
+    }}
+  />
+
+<div className="max-w-md w-full space-y-6 md:space-y-8">
         <div className="text-center">
           <h2 className="mt-4 md:mt-6 text-2xl md:text-3xl font-bold text-gray-900">
             Đăng nhập hệ thống
@@ -103,10 +129,10 @@ export default function LoginPage() {
         </div>
         
         <Card>
-          <CardHeader className="p-4 md:p-6">
+          <CardHeader className="p-4 md:p-6 text-center">
             <CardTitle className="text-lg md:text-xl">Đăng nhập</CardTitle>
             <CardDescription className="text-xs md:text-sm">
-              Nhập thông tin đăng nhập của bạn
+              Truy cập nền tảng quản lý nhà trọ
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 md:p-6">

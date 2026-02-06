@@ -2,48 +2,52 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Home, FileText, AlertCircle, User, LogOut, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useSession, signOut } from 'next-auth/react';
 
-export default function KhachThueDashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import { Button } from '@/components/ui/button';
+import { Home, FileText, AlertCircle, User, LogOut, Menu, X } from 'lucide-react';
+
+export default function KhachThueDashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [khachThue, setKhachThue] = useState<any>(null);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const { data: session, status } = useSession();
+  const user = session?.user;
+
   useEffect(() => {
-    // Kiểm tra đăng nhập
-    const token = localStorage.getItem('khachThueToken');
-    const khachThueData = localStorage.getItem('khachThueData');
-    
-    if (!token || !khachThueData) {
-      router.push('/khach-thue/dang-nhap');
+    if (status === 'loading') return;
+
+    if (!session) {
+      router.replace('/dang-nhap');
       return;
     }
-    
-    setKhachThue(JSON.parse(khachThueData));
-  }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('khachThueToken');
-    localStorage.removeItem('khachThueData');
+      if (user?.role !== 'khachThue') {
+    router.replace('/dashboard'); 
+    return;
+      }
+    // if (user?.role !== 'khachThue') router.replace('/dashboard');
+  }, [status, session, user?.role, router]);
+
+  const handleLogout = async () => {
     toast.success('Đã đăng xuất');
-    router.push('/khach-thue/dang-nhap');
+    await signOut({ redirect: false });
+    router.replace('/dang-nhap');
   };
 
-  if (!khachThue) {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
       </div>
     );
   }
+
+  if (!session) return null;
 
   const navigation = [
     { name: 'Tổng quan', href: '/khach-thue/dashboard', icon: Home },
@@ -67,15 +71,17 @@ export default function KhachThueDashboardLayout({
       </div>
 
       {/* Sidebar */}
-      <aside className={`
-        fixed top-0 left-0 z-40 w-64 h-screen transition-transform bg-white border-r
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <div className="h-full px-4 py-6 overflow-y-auto">
+      <aside
+        className={`
+          fixed top-0 left-0 z-40 w-64 h-screen transition-transform bg-white border-r
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        <div className="h-full px-4 py-6 overflow-y-auto flex flex-col">
           <div className="mb-6 p-4 bg-blue-50 rounded-lg">
             <h2 className="text-lg font-bold text-blue-900">Xin chào,</h2>
-            <p className="text-sm text-blue-700 font-medium">{khachThue.hoTen}</p>
-            <p className="text-xs text-blue-600 mt-1">{khachThue.soDienThoai}</p>
+            <p className="text-sm text-blue-700 font-medium">{user?.name}</p>
+            <p className="text-xs text-blue-600 mt-1">{(user as any)?.phone}</p>
           </div>
 
           <nav className="space-y-2">
@@ -89,10 +95,7 @@ export default function KhachThueDashboardLayout({
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                    ${isActive 
-                      ? 'bg-blue-600 text-white' 
-                      : 'text-gray-700 hover:bg-gray-100'
-                    }
+                    ${isActive ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}
                   `}
                 >
                   <Icon className="h-5 w-5" />
@@ -102,7 +105,7 @@ export default function KhachThueDashboardLayout({
             })}
           </nav>
 
-          <div className="mt-auto pt-6 border-t">
+          <div className="pt-6 border-t">
             <Button
               variant="outline"
               className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
@@ -117,12 +120,10 @@ export default function KhachThueDashboardLayout({
 
       {/* Main content */}
       <main className="lg:ml-64 min-h-screen">
-        <div className="p-4 lg:p-8 pt-20 lg:pt-8">
-          {children}
-        </div>
+        <div className="p-4 lg:p-8 pt-20 lg:pt-8">{children}</div>
       </main>
 
-      {/* Mobile menu overlay */}
+      {/* Mobile overlay */}
       {isMobileMenuOpen && (
         <div
           className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden"
@@ -132,4 +133,3 @@ export default function KhachThueDashboardLayout({
     </div>
   );
 }
-
