@@ -98,7 +98,7 @@ export default function LoginPage() {
   <div
     className="absolute inset-0 pointer-events-none"
     style={{
-      backgroundImage: "url('/backgroundlogin1.svg')",
+      backgroundImage: "url('/backgroundlogin.svg')",
       backgroundSize: "40%",
       backgroundPosition: "left center",
       backgroundRepeat: "no-repeat",
@@ -109,7 +109,7 @@ export default function LoginPage() {
   <div
     className="absolute inset-0 pointer-events-none"
     style={{
-      backgroundImage: "url('/backgroundlogin1.svg')",
+      backgroundImage: "url('/backgroundlogin.svg')",
       backgroundSize: "40%",
       backgroundPosition: "left center",
       backgroundRepeat: "no-repeat",
