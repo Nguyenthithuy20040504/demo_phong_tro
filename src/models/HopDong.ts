@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import Phong from "@/models/Phong";
+
 
 export interface IHopDong extends Document {
   maHopDong: string;

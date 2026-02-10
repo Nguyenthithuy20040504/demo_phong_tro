@@ -30,7 +30,6 @@ export default function KhachThueDashboardLayout({ children }: { children: React
     router.replace('/dashboard'); 
     return;
       }
-    // if (user?.role !== 'khachThue') router.replace('/dashboard');
   }, [status, session, user?.role, router]);
 
   const handleLogout = async () => {

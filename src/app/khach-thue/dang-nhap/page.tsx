@@ -33,7 +33,7 @@ export default function KhachThueDangNhapPage() {
       const result = await response.json();
 
       if (result.success) {
-        // Lưu token vào localStorage
+        // Lưu token vào localStorageKin
         localStorage.setItem('khachThueToken', result.data.token);
         localStorage.setItem('khachThueData', JSON.stringify(result.data.khachThue));
         

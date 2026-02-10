@@ -23,14 +23,17 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  useEffect(() => {
+ /* useEffect(() => {
+  console.log("session data:", session);
+  console.log("status:", status);
     if (status === 'loading') return;
     
     if (!session) {
       router.push('/dang-nhap');
+      console.log("toang r ô cháu ạ");
       return;
     }
-  }, [session, status, router]);
+  }, [session, status, router]);*/
 
   if (status === 'loading') {
     return (

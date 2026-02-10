@@ -10,7 +10,7 @@ declare module 'next-auth' {
       phone: string;
       avatar?: string;
     };
-    client: {
+    client?: {
       clientid: string;
       clientemail:string;
       clientname: string;
@@ -34,5 +34,12 @@ declare module 'next-auth/jwt' {
     role: string;
     phone: string;
     avatar?: string;
+    client?: {
+      clientid: string;
+      clientemail: string;
+      clientname: string;
+      clientrole: string;
+      clientphone: string;
+    };
   }
 }

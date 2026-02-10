@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+
+   
+    {
+      "name": "Next.js - Chrome (Frontend)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    },
+
+    {
+      "name": "Next.js - Node (Backend/API)",
+      "type": "node",
+      "request": "attach",
+      "port": 9230
+    }
+  ]
+}

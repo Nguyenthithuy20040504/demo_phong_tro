@@ -4,6 +4,9 @@ import KhachThue from '@/models/KhachThue';
 import HopDong from '@/models/HopDong';
 import HoaDon from '@/models/HoaDon';
 import jwt from 'jsonwebtoken';
+import mongoose from "mongoose";
+import "@/models/Phong";
+import "@/models/ToaNha";
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,6 +40,8 @@ export async function GET(request: NextRequest) {
     }
 
     await dbConnect();
+
+
 
     // Lấy thông tin khách thuê
     const khachThue = await KhachThue.findById(decoded.id);
