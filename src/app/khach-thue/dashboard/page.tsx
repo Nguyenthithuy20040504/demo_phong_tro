@@ -48,7 +48,8 @@ export default function KhachThueDashboardPage() {
   }
 
   if (!dashboardData) {
-    console.log("toang thật sự");
+        console.log("toang thật sự");
+
     return <div className="text-center text-gray-600">Không có dữ liệu</div>;
   }
 

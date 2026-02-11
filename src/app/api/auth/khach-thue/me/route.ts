@@ -3,49 +3,51 @@ import dbConnect from '@/lib/mongodb';
 import KhachThue from '@/models/KhachThue';
 import HopDong from '@/models/HopDong';
 import HoaDon from '@/models/HoaDon';
-import jwt from 'jsonwebtoken';
 import mongoose from "mongoose";
 import "@/models/Phong";
 import "@/models/ToaNha";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth"; // <-- chỉnh đúng đường dẫn của bạn
+
 export async function GET(request: NextRequest) {
   try {
-    // Lấy token từ header
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // ================== 🔹 PHẦN NÀY LÀ PHẦN QUAN TRỌNG ĐÃ ĐỔI 🔹 ==================
+
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
+        { success: false, message: "Unauthorized - no session" },
         { status: 401 }
       );
     }
 
-    const token = authHeader.substring(7);
-    
-    // Verify token
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET || 'secret');
-    } catch (error) {
+    // Lấy id khách thuê từ session
+    const userId = session.user.id;
+
+    if (!userId) {
       return NextResponse.json(
-        { success: false, message: 'Token không hợp lệ' },
+        { success: false, message: "Unauthorized - missing user id" },
         { status: 401 }
       );
     }
 
-    if (decoded.role !== 'khachThue') {
+    // (Tùy bạn có thể check role trong session nếu muốn)
+    if (session.user.role !== "khachThue") {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
+        { success: false, message: "Forbidden - not khachThue" },
         { status: 403 }
       );
     }
 
+    // ================== 🔹 HẾT PHẦN ĐỔI 🔹 ==================
+
     await dbConnect();
 
+    // Lấy thông tin khách thuê (ĐỔI: dùng userId từ session thay vì decoded.id)
+    const khachThue = await KhachThue.findById(userId);
 
-
-    // Lấy thông tin khách thuê
-    const khachThue = await KhachThue.findById(decoded.id);
-    
     if (!khachThue) {
       return NextResponse.json(
         { success: false, message: 'Khách thuê không tồn tại' },
@@ -53,21 +55,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Lấy hợp đồng hiện tại
+    // Lấy hợp đồng hiện tại (GIỮ NGUYÊN LOGIC CỦA BẠN)
     const hopDongHienTai = await HopDong.findOne({
       khachThueId: khachThue._id,
       trangThai: 'hoatDong',
       ngayBatDau: { $lte: new Date() },
       ngayKetThuc: { $gte: new Date() }
     })
-    .populate('phong', 'maPhong dienTich giaThue tienCoc toaNha')
-    .populate({
-      path: 'phong',
-      populate: {
-        path: 'toaNha',
-        select: 'tenToaNha diaChi'
-      }
-    });
+      .populate('phong', 'maPhong dienTich giaThue tienCoc toaNha')
+      .populate({
+        path: 'phong',
+        populate: {
+          path: 'toaNha',
+          select: 'tenToaNha diaChi'
+        }
+      });
 
     // Đếm số hóa đơn chưa thanh toán
     const soHoaDonChuaThanhToan = await HoaDon.countDocuments({
@@ -79,8 +81,8 @@ export async function GET(request: NextRequest) {
     const hoaDonGanNhat = await HoaDon.findOne({
       khachThue: khachThue._id
     })
-    .sort({ ngayTao: -1 })
-    .populate('phong', 'maPhong');
+      .sort({ ngayTao: -1 })
+      .populate('phong', 'maPhong');
 
     return NextResponse.json({
       success: true,
@@ -111,4 +113,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
