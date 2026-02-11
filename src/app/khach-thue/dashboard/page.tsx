@@ -5,25 +5,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Home, FileText, AlertCircle, MapPin, Calendar, DollarSign, Phone, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSession } from "next-auth/react";
 
 export default function KhachThueDashboardPage() {
-  const [dashboardData, setDashboardData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+const [dashboardData, setDashboardData] = useState<any>(null);
+const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+const { data: session, status } = useSession();
+
+useEffect(() => {
+  if (status === "authenticated") {
     fetchDashboardData();
-  }, []);
+  }
+}, [status]);
 
   const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem('khachThueToken');
-      if (!token) return;
+    const response = await fetch('/api/auth/khach-thue/me', {
+  credentials: "include",   
+  cache: "no-store",
+});
 
-      const response = await fetch('/api/auth/khach-thue/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
 
       const result = await response.json();
       if (result.success) {
@@ -50,7 +52,7 @@ export default function KhachThueDashboardPage() {
   if (!dashboardData) {
         console.log("toang thật sự");
 
-    return <div className="text-center text-gray-600">Không có dữ liệu</div>;
+    return <div className="text-center text-red-600">Không có dữ liệu</div>;
   }
 
   const { khachThue, hopDongHienTai, soHoaDonChuaThanhToan, hoaDonGanNhat } = dashboardData;
