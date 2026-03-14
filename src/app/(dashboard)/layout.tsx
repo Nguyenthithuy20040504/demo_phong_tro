@@ -52,15 +52,21 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="overflow-hidden">
-        <header className="sticky top-0 z-40 flex h-12 shrink-0 items-center gap-2 border-b bg-background px-4">
+      {/* Premium Clean Background */}
+      <div className="fixed inset-0 bg-background transition-colors duration-300 -z-10" />
+      
+      <AppSidebar className="glass-panel border-r-0" />
+      
+      <SidebarInset className="overflow-hidden bg-transparent transition-all duration-300">
+        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b border-border/50 bg-background/60 backdrop-blur-xl px-4 shadow-sm transition-all duration-300">
           <PageProgress />
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-6" />
-          <DynamicBreadcrumb />
+          <SidebarTrigger className="-ml-1 text-foreground hover:bg-muted/50 transition-colors rounded-full" />
+          <Separator orientation="vertical" className="h-6 bg-border" />
+          <div className="flex-1">
+            <DynamicBreadcrumb />
+          </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {children}
         </main>
       </SidebarInset>

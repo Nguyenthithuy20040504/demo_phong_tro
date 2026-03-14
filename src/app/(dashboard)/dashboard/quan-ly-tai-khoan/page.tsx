@@ -60,7 +60,8 @@ interface User {
   vaiTro?: string;
   avatar?: string;
   anhDaiDien?: string;
-  createdAt: string;
+  createdAt?: string;
+  ngayTao?: string;
   lastLogin?: string;
   isActive?: boolean;
   trangThai?: string;
@@ -103,8 +104,8 @@ export default function AccountManagementPage() {
   }, []);
 
   useEffect(() => {
-    // Chỉ fetch 1 lần duy nhất khi user là admin
-    if (session?.user?.role === 'admin' && !hasFetchedRef.current) {
+    // Chỉ fetch 1 lần duy nhất khi user là admin hoặc chuNha
+    if ((session?.user?.role === 'admin' || session?.user?.role === 'chuNha') && !hasFetchedRef.current) {
       hasFetchedRef.current = true;
       fetchUsers(false); // Sử dụng cache nếu có
     }
@@ -124,7 +125,9 @@ export default function AccountManagementPage() {
         }
       }
       
-      const response = await fetch('/api/admin/users');
+      const response = await fetch('/api/admin/users', {
+        cache: 'no-store'
+      });
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -274,13 +277,13 @@ export default function AccountManagementPage() {
     (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (session?.user?.role !== 'admin') {
+  if (session?.user?.role !== 'admin' && session?.user?.role !== 'chuNha') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Không có quyền truy cập</h2>
-          <p className="text-gray-600">Bạn cần quyền quản trị viên để truy cập trang này.</p>
+          <p className="text-gray-600">Bạn cần quyền quản trị viên hoặc chủ nhà để truy cập trang này.</p>
         </div>
       </div>
     );
@@ -301,7 +304,7 @@ export default function AccountManagementPage() {
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">Quản lý tài khoản</h1>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold font-heading text-foreground drop-shadow-sm">Quản lý tài khoản</h1>
           <p className="text-xs md:text-sm text-gray-600">Quản lý người dùng và phân quyền hệ thống</p>
         </div>
         <div className="flex gap-2">
@@ -383,8 +386,13 @@ export default function AccountManagementPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="nhanVien" className="text-sm">Nhân viên</SelectItem>
-                    <SelectItem value="chuNha" className="text-sm">Chủ nhà</SelectItem>
-                    <SelectItem value="admin" className="text-sm">Quản trị viên</SelectItem>
+                    <SelectItem value="khachThue" className="text-sm">Khách thuê</SelectItem>
+                    {session?.user?.role === 'admin' && (
+                      <>
+                        <SelectItem value="chuNha" className="text-sm">Chủ nhà</SelectItem>
+                        <SelectItem value="admin" className="text-sm">Quản trị viên</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -403,8 +411,8 @@ export default function AccountManagementPage() {
      
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 md:gap-4 lg:gap-6">
-        <Card className="p-2 md:p-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 lg:gap-6">
+        <Card className="p-2 md:p-4 premium-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] md:text-xs font-medium text-gray-600">Tổng người dùng</p>
@@ -414,7 +422,7 @@ export default function AccountManagementPage() {
           </div>
         </Card>
 
-        <Card className="p-2 md:p-4">
+        <Card className="p-2 md:p-4 premium-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] md:text-xs font-medium text-gray-600">Quản trị viên</p>
@@ -426,7 +434,7 @@ export default function AccountManagementPage() {
           </div>
         </Card>
 
-        <Card className="p-2 md:p-4">
+        <Card className="p-2 md:p-4 premium-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] md:text-xs font-medium text-gray-600">Chủ nhà</p>
@@ -438,7 +446,7 @@ export default function AccountManagementPage() {
           </div>
         </Card>
 
-        <Card className="p-2 md:p-4">
+        <Card className="p-2 md:p-4 premium-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] md:text-xs font-medium text-gray-600">Nhân viên</p>
@@ -449,10 +457,22 @@ export default function AccountManagementPage() {
             <Users className="h-3 w-3 md:h-4 md:w-4 text-green-600" />
           </div>
         </Card>
+
+        <Card className="p-2 md:p-4 premium-card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600">Khách thuê</p>
+              <p className="text-base md:text-2xl font-bold text-orange-500">
+                {users.filter(u => getUserRole(u) === 'khachThue').length}
+              </p>
+            </div>
+            <Users className="h-3 w-3 md:h-4 md:w-4 text-orange-500" />
+          </div>
+        </Card>
       </div>
 
       {/* Desktop Table */}
-      <Card className="hidden md:block">
+      <Card className="hidden md:block premium-card border-none shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -500,7 +520,7 @@ export default function AccountManagementPage() {
             const isCurrentUser = session?.user?.id === user._id;
             
             return (
-              <Card key={user._id} className="p-4">
+              <Card key={user._id} className="p-4 premium-card border-none shadow-md">
                 <div className="space-y-3">
                   {/* Header with avatar and info */}
                   <div className="flex items-start gap-3">
@@ -534,7 +554,11 @@ export default function AccountManagementPage() {
                     )}
                     <div className="flex items-center gap-2 text-gray-500 text-xs">
                       <Calendar className="h-3 w-3" />
-                      <span>Tham gia: {new Date(user.createdAt).toLocaleDateString('vi-VN')}</span>
+                      <span>Tham gia: {
+                        (user.createdAt || user.ngayTao) 
+                          ? new Date(user.createdAt || user.ngayTao!).toLocaleDateString('vi-VN') 
+                          : 'Chưa cập nhật'
+                      }</span>
                     </div>
                   </div>
 
@@ -620,8 +644,13 @@ export default function AccountManagementPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="nhanVien" className="text-sm">Nhân viên</SelectItem>
-                  <SelectItem value="chuNha" className="text-sm">Chủ nhà</SelectItem>
-                  <SelectItem value="admin" className="text-sm">Quản trị viên</SelectItem>
+                  <SelectItem value="khachThue" className="text-sm">Khách thuê</SelectItem>
+                  {session?.user?.role === 'admin' && (
+                    <>
+                      <SelectItem value="chuNha" className="text-sm">Chủ nhà</SelectItem>
+                      <SelectItem value="admin" className="text-sm">Quản trị viên</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>

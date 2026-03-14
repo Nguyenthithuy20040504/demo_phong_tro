@@ -6,7 +6,7 @@ export interface INguoiDung extends Document {
   email: string;
   matKhau: string;
   soDienThoai: string;
-  vaiTro: 'admin' | 'chuNha' | 'nhanVien';
+  vaiTro: 'admin' | 'chuNha' | 'nhanVien' | 'khachThue';
   anhDaiDien?: string;
   trangThai: 'hoatDong' | 'khoa';
   ngayTao: Date;
@@ -15,13 +15,14 @@ export interface INguoiDung extends Document {
   name: string;
   password: string;
   phone: string;
-  role: 'admin' | 'chuNha' | 'nhanVien';
+  role: 'admin' | 'chuNha' | 'nhanVien' | 'khachThue';
   avatar?: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   lastLogin?: Date;
   address?: string;
+  nguoiQuanLy?: mongoose.Types.ObjectId;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -53,7 +54,7 @@ const NguoiDungSchema = new Schema<INguoiDung>({
   },
   vaiTro: {
     type: String,
-    enum: ['admin', 'chuNha', 'nhanVien'],
+    enum: ['admin', 'chuNha', 'nhanVien', 'khachThue'],
     default: 'nhanVien'
   },
   anhDaiDien: {
@@ -84,7 +85,7 @@ const NguoiDungSchema = new Schema<INguoiDung>({
   },
   role: {
     type: String,
-    enum: ['admin', 'chuNha', 'nhanVien'],
+    enum: ['admin', 'chuNha', 'nhanVien', 'khachThue'],
     default: 'nhanVien'
   },
   avatar: {
@@ -103,6 +104,11 @@ const NguoiDungSchema = new Schema<INguoiDung>({
     type: String,
     required: false,
     maxlength: [500, 'Address cannot exceed 500 characters']
+  },
+  nguoiQuanLy: {
+    type: Schema.Types.ObjectId,
+    ref: 'NguoiDung',
+    default: null
   }
 }, {
   timestamps: { 

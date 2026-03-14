@@ -319,7 +319,7 @@ export default function XemPhongPage() {
                 </CardHeader>
                 <CardContent className="space-y-3 md:space-y-4 p-4 md:p-6">
                   <div className="flex items-center justify-between text-xs md:text-sm">
-                    <span className="text-gray-600">Mã phòng:</span>
+                    <span className="text-gray-600">Số phòng:</span>
                     <span className="font-medium">{selectedPhong.maPhong}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs md:text-sm">
@@ -504,7 +504,7 @@ export default function XemPhongPage() {
                       <div className="relative">
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors duration-300" />
                         <Input
-                          placeholder="Nhập mã phòng, mô tả..."
+                          placeholder="Nhập số phòng, mô tả..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                           className="pl-12 pr-4 py-3 h-12 text-sm border-0 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/20 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"

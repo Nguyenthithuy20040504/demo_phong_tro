@@ -7,6 +7,7 @@ import HoaDon from '@/models/HoaDon';
 import SuCo from '@/models/SuCo';
 import HopDong from '@/models/HopDong';
 import ThanhToan from '@/models/ThanhToan';
+import { getAccessibleToaNhaIds } from '@/lib/auth-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,11 +26,52 @@ export async function GET(request: NextRequest) {
     const currentMonth = currentDate.getMonth() + 1;
     const currentYear = currentDate.getFullYear();
 
+    const accessibleToaNhaIds = await getAccessibleToaNhaIds(session.user);
+    const hasToaNhaFilter = accessibleToaNhaIds !== null;
+    let phongIds: any[] = [];
+    let phongQuery: any = {};
+    let hoaDonSuCoQuery: any = {};
+    let thanhToanQuery: any = {};
+
+    if (hasToaNhaFilter) {
+      if (accessibleToaNhaIds.length === 0) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            tongSoPhong: 0, phongTrong: 0, phongDangThue: 0, phongBaoTri: 0,
+            doanhThuThang: 0, doanhThuNam: 0, hoaDonSapDenHan: 0,
+            suCoCanXuLy: 0, hopDongSapHetHan: 0,
+          },
+        });
+      }
+      
+      const phongs = await Phong.find({ toaNha: { $in: accessibleToaNhaIds } }).select('_id');
+      phongIds = phongs.map(p => p._id);
+      
+      if (phongIds.length === 0) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            tongSoPhong: 0, phongTrong: 0, phongDangThue: 0, phongBaoTri: 0,
+            doanhThuThang: 0, doanhThuNam: 0, hoaDonSapDenHan: 0,
+            suCoCanXuLy: 0, hopDongSapHetHan: 0,
+          },
+        });
+      }
+
+      phongQuery.toaNha = { $in: accessibleToaNhaIds };
+      hoaDonSuCoQuery.phong = { $in: phongIds };
+      
+      const hopDongs = await HopDong.find({ phong: { $in: phongIds } }).select('_id');
+      const hopDongIds = hopDongs.map(hd => hd._id);
+      thanhToanQuery.hopDong = { $in: hopDongIds };
+    }
+
     // Get room stats
-    const totalPhong = await Phong.countDocuments();
-    const phongTrong = await Phong.countDocuments({ trangThai: 'trong' });
-    const phongDangThue = await Phong.countDocuments({ trangThai: 'dangThue' });
-    const phongBaoTri = await Phong.countDocuments({ trangThai: 'baoTri' });
+    const totalPhong = await Phong.countDocuments(phongQuery);
+    const phongTrong = await Phong.countDocuments({ ...phongQuery, trangThai: 'trong' });
+    const phongDangThue = await Phong.countDocuments({ ...phongQuery, trangThai: 'dangThue' });
+    const phongBaoTri = await Phong.countDocuments({ ...phongQuery, trangThai: 'baoTri' });
 
     // Get revenue stats
     const startOfMonth = new Date(currentYear, currentMonth - 1, 1);
@@ -38,6 +80,7 @@ export async function GET(request: NextRequest) {
     const doanhThuThang = await ThanhToan.aggregate([
       {
         $match: {
+          ...thanhToanQuery,
           ngayThanhToan: {
             $gte: startOfMonth,
             $lte: endOfMonth
@@ -58,6 +101,7 @@ export async function GET(request: NextRequest) {
     const doanhThuNam = await ThanhToan.aggregate([
       {
         $match: {
+          ...thanhToanQuery,
           ngayThanhToan: {
             $gte: startOfYear,
             $lte: endOfYear
@@ -77,12 +121,14 @@ export async function GET(request: NextRequest) {
     nextWeek.setDate(nextWeek.getDate() + 7);
     
     const hoaDonSapDenHan = await HoaDon.countDocuments({
+      ...hoaDonSuCoQuery,
       hanThanhToan: { $lte: nextWeek },
       trangThai: { $in: ['chuaThanhToan', 'daThanhToanMotPhan'] }
     });
 
     // Get pending issues
     const suCoCanXuLy = await SuCo.countDocuments({
+      ...hoaDonSuCoQuery,
       trangThai: { $in: ['moi', 'dangXuLy'] }
     });
 
@@ -91,6 +137,7 @@ export async function GET(request: NextRequest) {
     nextMonth.setDate(nextMonth.getDate() + 30);
     
     const hopDongSapHetHan = await HopDong.countDocuments({
+      ...hoaDonSuCoQuery,
       ngayKetThuc: { $lte: nextMonth },
       trangThai: 'hoatDong'
     });

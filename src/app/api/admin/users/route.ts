@@ -4,22 +4,34 @@ import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import NguoiDung from '@/models/NguoiDung';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.email || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json({ message: 'Phiên đăng nhập đã hết hạn, vui lòng tải lại trang' }, { status: 401 });
+    }
+
+    // Role check: Admin can access, ChuNha can access
+    if (session.user.role !== 'admin' && session.user.role !== 'chuNha') {
+      return NextResponse.json({ message: 'Bạn không có quyền xem danh sách tài khoản' }, { status: 403 });
     }
 
     await dbConnect();
     
-    const users = await NguoiDung.find({}, { password: 0, matKhau: 0 }).sort({ createdAt: -1 });
+    let query: any = {};
+    if (session.user.role === 'chuNha') {
+      query.nguoiQuanLy = session.user.id;
+    }
+    
+    const users = await NguoiDung.find(query, { password: 0, matKhau: 0 }).sort({ createdAt: -1 });
     
     return NextResponse.json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ message: 'Lỗi hệ thống khi tải danh sách người dùng' }, { status: 500 });
   }
 }
 
@@ -27,8 +39,13 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.email || session.user.role !== 'admin') {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Role check: Admin can access, ChuNha can access
+    if (session.user.role !== 'admin' && session.user.role !== 'chuNha') {
+      return NextResponse.json({ message: 'Bạn không có quyền tạo tài khoản mới' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -36,14 +53,20 @@ export async function POST(request: NextRequest) {
 
     // Validation
     if (!name || !email || !password || !role) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ message: 'Vui lòng điền đầy đủ các thông tin: Họ tên, Email, Mật khẩu và Vai trò' }, { status: 400 });
+    }
+
+    if (session.user.role === 'chuNha') {
+      if (role !== 'nhanVien' && role !== 'khachThue') {
+         return NextResponse.json({ message: 'Chủ nhà chỉ được tạo tài khoản Nhân Viên hoặc Khách Thuê' }, { status: 403 });
+      }
     }
 
     // Check if user already exists
     await dbConnect();
     const existingUser = await NguoiDung.findOne({ email });
     if (existingUser) {
-      return NextResponse.json({ error: 'Email đã được sử dụng' }, { status: 400 });
+      return NextResponse.json({ message: 'Email này đã được sử dụng. Vui lòng nhập một Email khác!' }, { status: 400 });
     }
 
     // Create user (password will be hashed by the model's pre-save hook)
@@ -62,7 +85,8 @@ export async function POST(request: NextRequest) {
       role,
       isActive: true,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      nguoiQuanLy: session.user.role === 'chuNha' ? session.user.id : null
     });
 
     await newUser.save();
@@ -72,6 +96,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error) {
     console.error('Error creating user:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ message: 'Không thể tạo được tài khoản lúc này, vui lòng thử lại sau' }, { status: 500 });
   }
 }

@@ -38,16 +38,18 @@ import {
   FileText,
   Copy,
   RefreshCw,
-  Calendar,
   Users,
   Home,
   Edit,
-  Trash2
+  Trash2,
+  MessageCircle,
+  Calendar
 } from 'lucide-react';
 import { HoaDon, HopDong, Phong, KhachThue } from '@/types';
 import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { generateZaloDeepLink } from '@/lib/zalo-formatter';
 
 // Helper functions for form and dialogs
 const getPhongName = (phongId: string | Phong, phongList: Phong[]) => {
@@ -841,6 +843,21 @@ export default function HoaDonPage() {
                       <Copy className="h-3.5 w-3.5 mr-1" />
                       Link
                     </Button>
+                    <a 
+                      href={generateZaloDeepLink(hoaDon)} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="flex-1"
+                    >
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="w-full bg-[#0068FF] hover:bg-[#0052CC] text-white"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5 mr-1" />
+                        Zalo
+                      </Button>
+                    </a>
                   </div>
                 </div>
               </Card>

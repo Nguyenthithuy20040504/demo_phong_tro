@@ -36,10 +36,11 @@ import {
   ChevronsLeft,
   ChevronsRight,
   CircleCheck,
-  AlertCircle,
   Camera,
   Copy,
   Search,
+  MessageCircle,
+  AlertCircle
 } from "lucide-react"
 import {
   ColumnDef,
@@ -87,6 +88,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import type { HoaDon, Phong, KhachThue } from '@/types'
+import { generateZaloDeepLink } from '@/lib/zalo-formatter'
 
 // Helper functions
 const formatCurrency = (amount: number) => {
@@ -321,6 +323,13 @@ const createColumns = (props: HoaDonTableProps): ColumnDef<HoaDon>[] => [
               Thanh toán
             </DropdownMenuItem>
           )}
+          <DropdownMenuItem 
+            onClick={() => window.open(generateZaloDeepLink(row.original), '_blank')}
+            className="text-[#0068FF] font-medium"
+          >
+            <MessageCircle className="mr-2 h-4 w-4" />
+            Nhắn qua Zalo
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => props.onShare(row.original)}>
             <Copy className="mr-2 h-4 w-4" />
@@ -487,7 +496,7 @@ export function HoaDonDataTable(props: HoaDonDataTableProps) {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Tìm kiếm theo mã hóa đơn..."
+                placeholder="Tìm kiếm theo mã hóa đơn, số phòng..."
                 value={searchTerm || ''}
                 onChange={(e) => onSearchChange?.(e.target.value)}
                 className="pl-10"

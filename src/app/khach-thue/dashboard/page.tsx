@@ -50,9 +50,34 @@ useEffect(() => {
   }
 
   if (!dashboardData) {
-        console.log("toang thật sự");
-
-    return <div className="text-center text-red-600">Không có dữ liệu</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+        <div className="bg-blue-50 p-6 rounded-full mb-6">
+          <Home className="h-16 w-16 text-blue-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-3">Chưa có thông tin phòng thuê</h2>
+        <p className="text-muted-foreground max-w-md mb-8">
+          Hiện tại hệ thống chưa ghi nhận thông tin thuê phòng của bạn. Vui lòng liên hệ với chủ nhà hoặc quản lý để được hỗ trợ cập nhật dữ liệu.
+        </p>
+        <Card className="w-full max-w-md shadow-sm border-dashed bg-card text-card-foreground">
+          <CardContent className="pt-6 pb-6">
+            <h3 className="font-semibold mb-4 flex items-center justify-center gap-2">
+              <Phone className="h-4 w-4" /> Liên hệ hỗ trợ
+            </h3>
+            <div className="space-y-3 text-sm text-left mx-auto w-fit">
+              <div className="flex items-center gap-3">
+                <div className="bg-muted p-2 rounded-full"><Phone className="h-4 w-4 text-muted-foreground" /></div>
+                <span className="text-muted-foreground">Hotline: <strong className="text-foreground">0123-456-789</strong></span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-muted p-2 rounded-full"><Mail className="h-4 w-4 text-muted-foreground" /></div>
+                <span className="text-muted-foreground">Email: <strong className="text-foreground">support@phongtro.com</strong></span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const { khachThue, hopDongHienTai, soHoaDonChuaThanhToan, hoaDonGanNhat } = dashboardData;
@@ -142,7 +167,7 @@ useEffect(() => {
                 <div className="flex items-start gap-2">
                   <Home className="h-4 w-4 mt-1 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Mã phòng</p>
+                    <p className="text-sm text-muted-foreground">Số phòng</p>
                     <p className="font-medium">{hopDongHienTai.phong.maPhong}</p>
                   </div>
                 </div>

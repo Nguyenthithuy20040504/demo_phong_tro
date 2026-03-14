@@ -12,6 +12,7 @@ export interface IToaNha extends Document {
   moTa?: string;
   anhToaNha: string[];
   chuSoHuu: mongoose.Types.ObjectId;
+  nguoiQuanLy: mongoose.Types.ObjectId[];
   tongSoPhong: number;
   tienNghiChung: string[];
   ngayTao: Date;
@@ -71,6 +72,10 @@ const ToaNhaSchema = new Schema<IToaNha>({
     ref: 'NguoiDung',
     required: [true, 'Chủ sở hữu là bắt buộc']
   },
+  nguoiQuanLy: [{
+    type: Schema.Types.ObjectId,
+    ref: 'NguoiDung'
+  }],
   tongSoPhong: {
     type: Number,
     required: [true, 'Tổng số phòng là bắt buộc'],

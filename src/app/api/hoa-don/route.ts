@@ -4,6 +4,7 @@ import HoaDon from '@/models/HoaDon';
 import HopDong from '@/models/HopDong';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getAccessibleToaNhaIds } from '@/lib/auth-utils';
 import { PhiDichVu } from '@/types';
 
 // GET - Lấy danh sách hóa đơn
@@ -65,6 +66,18 @@ export async function GET(request: NextRequest) {
     }
     if (trangThai) {
       query.trangThai = trangThai;
+    }
+
+    const accessibleToaNhaIds = await getAccessibleToaNhaIds(session.user);
+    if (accessibleToaNhaIds !== null) {
+      const phongs = await connectToDatabase().then((db) => db.model('Phong').find({ toaNha: { $in: accessibleToaNhaIds } }).select('_id'));
+      const phongIds = phongs.map((p: any) => p._id);
+      
+      if (phongIds.length === 0) {
+         return NextResponse.json({ success: true, data: [], pagination: { total: 0 } });
+      }
+      
+      query.phong = { $in: phongIds };
     }
 
     const skip = (page - 1) * limit;

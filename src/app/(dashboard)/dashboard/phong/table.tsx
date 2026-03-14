@@ -203,7 +203,7 @@ const createColumns = (props: PhongTableProps): ColumnDef<Phong>[] => [
   },
   {
     accessorKey: "maPhong",
-    header: "Mã phòng",
+    header: "Số phòng",
     cell: ({ row }) => (
       <div className="min-w-24">
         <div className="font-medium">{row.original.maPhong}</div>
@@ -500,7 +500,7 @@ export function PhongDataTable(props: PhongDataTableProps) {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Tìm kiếm theo mã phòng, mô tả..."
+                placeholder="Tìm kiếm theo số phòng, mô tả..."
                 value={searchTerm || ''}
                 onChange={(e) => onSearchChange?.(e.target.value)}
                 className="pl-10"

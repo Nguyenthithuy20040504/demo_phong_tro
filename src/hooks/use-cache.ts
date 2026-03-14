@@ -50,11 +50,6 @@ export function useCache<T>(config: CacheConfig) {
     }
   }, [key]);
 
-  // Clear cache
-  const clearCache = useCallback(() => {
-    sessionStorage.removeItem(key);
-  }, [key]);
-
   // Clear all dashboard caches
   const clearAllCaches = useCallback(() => {
     const keys = [
@@ -69,6 +64,12 @@ export function useCache<T>(config: CacheConfig) {
     ];
     keys.forEach(k => sessionStorage.removeItem(k));
   }, []);
+
+  // Clear cache for current key AND all other caches to prevent cross-entity sync issues
+  const clearCache = useCallback(() => {
+    sessionStorage.removeItem(key);
+    clearAllCaches();
+  }, [key, clearAllCaches]);
 
   return {
     getCache,

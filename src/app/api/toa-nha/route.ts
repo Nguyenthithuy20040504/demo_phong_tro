@@ -5,6 +5,7 @@ import dbConnect from '@/lib/mongodb';
 import ToaNha from '@/models/ToaNha';
 import Phong from '@/models/Phong';
 import HopDong from '@/models/HopDong';
+import { getAccessibleToaNhaIds } from '@/lib/auth-utils';
 import { z } from 'zod';
 import mongoose from 'mongoose';
 
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
 
-    const query = search 
+    const query: any = search 
       ? {
           $or: [
             { tenToaNha: { $regex: search, $options: 'i' } },
@@ -50,6 +51,11 @@ export async function GET(request: NextRequest) {
           ]
         }
       : {};
+
+    const accessibleToaNhaIds = await getAccessibleToaNhaIds(session.user);
+    if (accessibleToaNhaIds !== null) {
+      query._id = { $in: accessibleToaNhaIds };
+    }
 
     const toaNhaList = await ToaNha.find(query)
       .populate('chuSoHuu', 'ten email')

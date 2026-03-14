@@ -8,7 +8,7 @@ import { updatePhongStatus } from '@/lib/status-utils';
 import { z } from 'zod';
 
 const phongSchema = z.object({
-  maPhong: z.string().min(1, 'Mã phòng là bắt buộc'),
+  maPhong: z.string().min(1, 'Số phòng là bắt buộc'),
   toaNha: z.string().min(1, 'Tòa nhà là bắt buộc'),
   tang: z.number().min(0, 'Tầng phải lớn hơn hoặc bằng 0'),
   dienTich: z.number().min(1, 'Diện tích phải lớn hơn 0'),
@@ -89,6 +89,20 @@ export async function PUT(
     if (!toaNha) {
       return NextResponse.json(
         { message: 'Tòa nhà không tồn tại' },
+        { status: 400 }
+      );
+    }
+
+    // Check duplicate checking for PUT
+    const existingPhong = await Phong.findOne({
+      _id: { $ne: id },
+      toaNha: validatedData.toaNha,
+      maPhong: validatedData.maPhong.trim().toUpperCase()
+    });
+    
+    if (existingPhong) {
+      return NextResponse.json(
+        { message: 'Số phòng này đã tồn tại trong tòa nhà' },
         { status: 400 }
       );
     }

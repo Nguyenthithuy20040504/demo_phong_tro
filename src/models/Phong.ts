@@ -19,11 +19,10 @@ export interface IPhong extends Document {
 const PhongSchema = new Schema<IPhong>({
   maPhong: {
     type: String,
-    required: [true, 'Mã phòng là bắt buộc'],
-    unique: true,
+    required: [true, 'Số phòng là bắt buộc'],
     trim: true,
     uppercase: true,
-    match: [/^[A-Z0-9]+$/, 'Mã phòng chỉ được chứa chữ cái và số']
+    match: [/^[A-Z0-9]+$/, 'Số phòng chỉ được chứa chữ cái và số']
   },
   toaNha: {
     type: Schema.Types.ObjectId,
@@ -62,7 +61,7 @@ const PhongSchema = new Schema<IPhong>({
   tienNghi: [{
     type: String,
     enum: [
-      'dieuhoa', 'nonglanh', 'tulanh', 'giuong', 'tuquanao', 'banlamviec', 
+      'dieuhoa', 'nonglanh', 'tulanh', 'giuong', 'tuquanao', 'banlamviec',
       'ghe', 'tivi', 'wifi', 'maygiat', 'bep', 'noi', 'chen', 'bat'
     ],
     trim: true
@@ -82,8 +81,8 @@ const PhongSchema = new Schema<IPhong>({
   timestamps: { createdAt: 'ngayTao', updatedAt: 'ngayCapNhat' }
 });
 
-// Index cho tìm kiếm
-// maPhong đã có unique: true nên không cần index thủ công
+// Index cho tìm kiếm và ràng buộc unique
+PhongSchema.index({ maPhong: 1, toaNha: 1 }, { unique: true, errorMessage: 'Phòng này đã tồn tại trong tòa nhà' } as any);
 PhongSchema.index({ toaNha: 1 });
 PhongSchema.index({ trangThai: 1 });
 PhongSchema.index({ giaThue: 1 });

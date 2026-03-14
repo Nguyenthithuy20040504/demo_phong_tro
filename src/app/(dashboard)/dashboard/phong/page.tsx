@@ -841,7 +841,7 @@ function PhongForm({
           {/* Thông tin cơ bản */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             <div className="space-y-2">
-              <Label htmlFor="maPhong" className="text-sm">Mã phòng</Label>
+              <Label htmlFor="maPhong" className="text-sm">Số phòng</Label>
               <Input
                 id="maPhong"
                 value={formData.maPhong}

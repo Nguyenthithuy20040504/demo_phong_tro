@@ -6,6 +6,7 @@ import KhachThue from '@/models/KhachThue';
 import HopDong from '@/models/HopDong';
 import Phong from '@/models/Phong';
 import { updateKhachThueStatus } from '@/lib/status-utils';
+import { getAccessibleKhachThueIds } from '@/lib/auth-utils';
 import { z } from 'zod';
 
 const khachThueSchema = z.object({
@@ -57,6 +58,15 @@ export async function GET(request: NextRequest) {
     
     if (trangThai) {
       query.trangThai = trangThai;
+    }
+
+    const accessibleKhachThueIds = await getAccessibleKhachThueIds(session.user);
+    if (accessibleKhachThueIds !== null) {
+      // User is not Admin => restrict query to these IDs
+      if (accessibleKhachThueIds.length === 0) {
+        return NextResponse.json({ success: true, data: [], pagination: { total: 0 } });
+      }
+      query._id = { $in: accessibleKhachThueIds };
     }
 
     const khachThueList = await KhachThue.find(query)

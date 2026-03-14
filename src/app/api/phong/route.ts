@@ -6,10 +6,11 @@ import Phong from '@/models/Phong';
 import ToaNha from '@/models/ToaNha';
 import HopDong from '@/models/HopDong';
 import { updatePhongStatus } from '@/lib/status-utils';
+import { getAccessibleToaNhaIds } from '@/lib/auth-utils';
 import { z } from 'zod';
 
 const phongSchema = z.object({
-  maPhong: z.string().min(1, 'Mã phòng là bắt buộc'),
+  maPhong: z.string().min(1, 'Số phòng là bắt buộc'),
   toaNha: z.string().min(1, 'Tòa nhà là bắt buộc'),
   tang: z.number().min(0, 'Tầng phải lớn hơn hoặc bằng 0'),
   dienTich: z.number().min(1, 'Diện tích phải lớn hơn 0'),
@@ -52,6 +53,20 @@ export async function GET(request: NextRequest) {
     
     if (toaNha) {
       query.toaNha = toaNha;
+    }
+    
+    // Auth role check
+    const accessibleToaNhaIds = await getAccessibleToaNhaIds(session.user);
+    if (accessibleToaNhaIds !== null) {
+      if (query.toaNha) {
+        // If query has a specific toaNha, ensure user is authorized to see it
+        const isAuthorized = accessibleToaNhaIds.some(id => id.toString() === query.toaNha);
+        if (!isAuthorized) {
+          return NextResponse.json({ success: true, data: [], pagination: { total: 0 } });
+        }
+      } else {
+        query.toaNha = { $in: accessibleToaNhaIds };
+      }
     }
     
     if (trangThai) {
@@ -146,6 +161,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if room number already exists in this building
+    const existingPhong = await Phong.findOne({ 
+      toaNha: validatedData.toaNha, 
+      maPhong: validatedData.maPhong.trim().toUpperCase() 
+    });
+    if (existingPhong) {
+      return NextResponse.json(
+        { message: 'Số phòng này đã tồn tại trong tòa nhà' },
+        { status: 400 }
+      );
+    }
+
     const newPhong = new Phong({
       ...validatedData,
       anhPhong: validatedData.anhPhong || [],
@@ -167,7 +194,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: error.errors[0].message },
+        { message: error.issues[0].message },
         { status: 400 }
       );
     }

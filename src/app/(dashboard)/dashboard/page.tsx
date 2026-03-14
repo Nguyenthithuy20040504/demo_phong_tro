@@ -77,13 +77,13 @@ export default function DashboardPage() {
     <div className="space-y-4 md:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-xs md:text-sm text-gray-600">Tổng quan hệ thống quản lý phòng trọ</p>
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold font-heading text-foreground drop-shadow-sm">Dashboard</h1>
+        <p className="text-xs md:text-sm text-muted-foreground mt-1">Tổng quan hệ thống quản lý phòng trọ</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 md:gap-4 lg:gap-6">
-        <Card className="p-2 md:p-4">
+        <Card className="p-2 md:p-4 premium-card border-none">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] md:text-xs font-medium text-gray-600">Tổng phòng</p>
@@ -96,7 +96,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-2 md:p-4">
+        <Card className="p-2 md:p-4 premium-card border-none">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] md:text-xs font-medium text-gray-600">Phòng trống</p>
@@ -109,7 +109,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-2 md:p-4">
+        <Card className="p-2 md:p-4 premium-card border-none">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] md:text-xs font-medium text-gray-600">Doanh thu</p>
@@ -122,7 +122,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-2 md:p-4">
+        <Card className="p-2 md:p-4 premium-card border-none">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] md:text-xs font-medium text-gray-600">Sự cố</p>
@@ -138,7 +138,7 @@ export default function DashboardPage() {
 
       {/* Secondary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
-        <Card className="p-3 md:p-4">
+        <Card className="p-3 md:p-4 premium-card border-none">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm font-medium text-gray-600">Hóa đơn sắp đến hạn</p>
@@ -151,7 +151,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-3 md:p-4">
+        <Card className="p-3 md:p-4 premium-card border-none">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm font-medium text-gray-600">Hợp đồng sắp hết hạn</p>
@@ -164,7 +164,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-3 md:p-4">
+        <Card className="p-3 md:p-4 premium-card border-none">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm font-medium text-gray-600">Doanh thu năm</p>
@@ -180,10 +180,10 @@ export default function DashboardPage() {
 
       {/* Recent Activities */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        <Card>
+        <Card className="premium-card border-none">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Hoạt động gần đây</CardTitle>
-            <CardDescription className="text-xs md:text-sm">
+            <CardTitle className="text-base md:text-lg font-heading text-foreground">Hoạt động gần đây</CardTitle>
+            <CardDescription className="text-xs md:text-sm text-muted-foreground">
               Các hoạt động mới nhất trong hệ thống
             </CardDescription>
           </CardHeader>
@@ -217,10 +217,10 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="premium-card border-none">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Thống kê phòng</CardTitle>
-            <CardDescription className="text-xs md:text-sm">
+            <CardTitle className="text-base md:text-lg font-heading text-foreground">Thống kê phòng</CardTitle>
+            <CardDescription className="text-xs md:text-sm text-muted-foreground">
               Tình trạng sử dụng phòng
             </CardDescription>
           </CardHeader>

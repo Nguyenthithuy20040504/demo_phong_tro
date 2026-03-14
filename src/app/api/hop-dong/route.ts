@@ -6,6 +6,7 @@ import HopDong from '@/models/HopDong';
 import Phong from '@/models/Phong';
 import KhachThue from '@/models/KhachThue';
 import { updatePhongStatus, updateAllKhachThueStatus } from '@/lib/status-utils';
+import { getAccessibleToaNhaIds } from '@/lib/auth-utils';
 import { z } from 'zod';
 
 const phiDichVuSchema = z.object({
@@ -63,6 +64,21 @@ export async function GET(request: NextRequest) {
     
     if (trangThai) {
       query.trangThai = trangThai;
+    }
+
+    const accessibleToaNhaIds = await getAccessibleToaNhaIds(session.user);
+    if (accessibleToaNhaIds !== null) {
+      if (accessibleToaNhaIds.length === 0) {
+         return NextResponse.json({ success: true, data: [], pagination: { total: 0 } });
+      }
+      const accessiblePhongs = await Phong.find({ toaNha: { $in: accessibleToaNhaIds } }).select('_id');
+      const phongIds = accessiblePhongs.map(p => p._id);
+      
+      if (phongIds.length === 0) {
+         return NextResponse.json({ success: true, data: [], pagination: { total: 0 } });
+      }
+      
+      query.phong = { $in: phongIds };
     }
 
     const hopDongList = await HopDong.find(query)
@@ -189,7 +205,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: error.errors[0].message },
+        { message: error.issues[0].message },
         { status: 400 }
       );
     }

@@ -12,11 +12,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { 
-  Settings, 
+  Settings,
   Type,
-  Save,
-  Monitor
+  Monitor,
+  Save
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function CaiDatPage() {
   const [fontSettings, setFontSettings] = useState({
@@ -40,10 +41,17 @@ export default function CaiDatPage() {
 
     const savedUiSettings = localStorage.getItem('uiSettings');
     if (savedUiSettings) {
-      const parsedUiSettings = JSON.parse(savedUiSettings);
-      setUiSettings(parsedUiSettings);
-      applyTheme(parsedUiSettings.theme);
-      applyDensity(parsedUiSettings.density);
+      try {
+        const parsedUiSettings = JSON.parse(savedUiSettings);
+        setUiSettings(parsedUiSettings);
+        applyTheme(parsedUiSettings.theme);
+        applyDensity(parsedUiSettings.density);
+      } catch (e) {
+        console.error("Lỗi parse UI settings", e);
+      }
+    } else {
+      // Default to light applying if unset
+      applyTheme('light');
     }
   }, []);
 
@@ -106,17 +114,22 @@ export default function CaiDatPage() {
   });
 
   const applyTheme = (theme: string) => {
+    const root = window.document.documentElement;
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
+      root.style.colorScheme = 'dark';
     } else if (theme === 'light') {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
+      root.style.colorScheme = 'light';
     } else if (theme === 'auto') {
       // Auto theme based on system preference
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (prefersDark) {
-        document.documentElement.classList.add('dark');
+        root.classList.add('dark');
+        root.style.colorScheme = 'dark';
       } else {
-        document.documentElement.classList.remove('dark');
+        root.classList.remove('dark');
+        root.style.colorScheme = 'light';
       }
     }
   };
@@ -162,6 +175,7 @@ export default function CaiDatPage() {
     setUiSettings(newUiSettings);
     applyTheme(theme);
     localStorage.setItem('uiSettings', JSON.stringify(newUiSettings));
+    toast.success('Đã cập nhật chủ đề!');
   };
 
   const handleDensityChange = (density: string) => {
@@ -175,15 +189,15 @@ export default function CaiDatPage() {
     <div className="space-y-4 md:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">Cài đặt giao diện</h1>
-        <p className="text-xs md:text-sm text-gray-600">Tùy chỉnh font chữ và giao diện hiển thị</p>
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold font-heading text-foreground">Cài đặt giao diện</h1>
+        <p className="text-xs md:text-sm text-muted-foreground">Tùy chỉnh font chữ và giao diện hiển thị</p>
       </div>
 
       {/* Font Settings */}
-          <Card>
-            <CardHeader className="p-4 md:p-6">
-          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-            <Type className="h-4 w-4 md:h-5 md:w-5" />
+      <Card className="premium-card border-none shadow-md">
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="flex items-center gap-2 text-base md:text-lg font-heading text-foreground">
+            <Type className="h-4 w-4 md:h-5 md:w-5 text-primary" />
             Cài đặt Font chữ
           </CardTitle>
               <CardDescription className="text-xs md:text-sm">
@@ -277,11 +291,11 @@ export default function CaiDatPage() {
               </div>
 
           {/* Preview */}
-              <div className="space-y-2">
+          <div className="space-y-2">
             <Label className="text-xs md:text-sm">Xem trước</Label>
-            <div className="p-3 md:p-4 border rounded-lg bg-gray-50">
+            <div className="p-3 md:p-4 border border-border rounded-lg bg-background">
               <p 
-                className="text-gray-900 text-xs md:text-sm"
+                className="text-foreground text-xs md:text-sm"
                 style={{
                   fontFamily: fontSettings.fontFamily,
                   fontSize: fontSettings.fontSize === 'small' ? '14px' : 
@@ -310,10 +324,10 @@ export default function CaiDatPage() {
           </Card>
 
       {/* UI Settings */}
-          <Card>
-            <CardHeader className="p-4 md:p-6">
-          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-            <Monitor className="h-4 w-4 md:h-5 md:w-5" />
+      <Card className="premium-card border-none shadow-md">
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="flex items-center gap-2 text-base md:text-lg font-heading text-foreground">
+            <Monitor className="h-4 w-4 md:h-5 md:w-5 text-primary" />
             Cài đặt giao diện
           </CardTitle>
               <CardDescription className="text-xs md:text-sm">
@@ -357,12 +371,12 @@ export default function CaiDatPage() {
             className="w-full"
             onClick={() => {
               localStorage.setItem('uiSettings', JSON.stringify(uiSettings));
-              alert('Đã lưu cài đặt giao diện thành công!');
+              toast.success('Đã lưu tất cả Cài đặt Giao diện!');
             }}
           >
             <Settings className="h-4 w-4 mr-2" />
             Lưu cài đặt giao diện
-              </Button>
+          </Button>
             </CardContent>
           </Card>
     </div>

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import ChiSoDienNuoc from '@/models/ChiSoDienNuoc';
 import Phong from '@/models/Phong';
+import { getAccessibleToaNhaIds } from '@/lib/auth-utils';
 import { z } from 'zod';
 
 const chiSoSchema = z.object({
@@ -51,6 +52,28 @@ export async function GET(request: NextRequest) {
     
     if (nam) {
       query.nam = parseInt(nam);
+    }
+
+    const accessibleToaNhaIds = await getAccessibleToaNhaIds(session.user);
+    if (accessibleToaNhaIds !== null) {
+      if (accessibleToaNhaIds.length === 0) {
+         return NextResponse.json({ success: true, data: [], pagination: { total: 0 } });
+      }
+      const accessiblePhongs = await Phong.find({ toaNha: { $in: accessibleToaNhaIds } }).select('_id');
+      const phongIds = accessiblePhongs.map(p => p._id);
+      
+      if (phongIds.length === 0) {
+         return NextResponse.json({ success: true, data: [], pagination: { total: 0 } });
+      }
+      
+      // If user supplied a specific phong query, verify it exists in their allowed phongs
+      if (query.phong) {
+        if (!phongIds.some(id => id.toString() === query.phong)) {
+           return NextResponse.json({ success: true, data: [], pagination: { total: 0 } });
+        }
+      } else {
+        query.phong = { $in: phongIds };
+      }
     }
 
     const chiSoList = await ChiSoDienNuoc.find(query)
