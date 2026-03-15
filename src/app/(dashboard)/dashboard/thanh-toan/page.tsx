@@ -305,7 +305,7 @@ export default function ThanhToanPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Tổng giao dịch</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Tổng giao dịch</p>
               <p className="text-base md:text-2xl font-bold">{thanhToanList.length}</p>
             </div>
             <CreditCard className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />
@@ -315,7 +315,7 @@ export default function ThanhToanPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Tiền mặt</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Tiền mặt</p>
               <p className="text-base md:text-2xl font-bold text-green-600">
                 {thanhToanList.filter(t => t.phuongThuc === 'tienMat').length}
               </p>
@@ -327,7 +327,7 @@ export default function ThanhToanPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Chuyển khoản</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Chuyển khoản</p>
               <p className="text-base md:text-2xl font-bold text-blue-600">
                 {thanhToanList.filter(t => t.phuongThuc === 'chuyenKhoan').length}
               </p>
@@ -339,7 +339,7 @@ export default function ThanhToanPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div className="min-w-0">
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Tổng tiền</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Tổng tiền</p>
               <p className="text-xs md:text-2xl font-bold text-green-600 truncate">
                 {formatCurrency(thanhToanList.reduce((sum, t) => sum + t.soTien, 0))}
               </p>

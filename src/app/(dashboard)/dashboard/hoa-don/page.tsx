@@ -609,7 +609,7 @@ export default function HoaDonPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Tổng hóa đơn</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Tổng hóa đơn</p>
               <p className="text-base md:text-2xl font-bold">{hoaDonList.length}</p>
             </div>
             <Receipt className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />
@@ -619,7 +619,7 @@ export default function HoaDonPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Chưa thanh toán</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Chưa thanh toán</p>
               <p className="text-base md:text-2xl font-bold text-red-600">
                 {hoaDonList.filter(h => h.trangThai === 'chuaThanhToan').length}
               </p>
@@ -631,7 +631,7 @@ export default function HoaDonPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Quá hạn</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Quá hạn</p>
               <p className="text-base md:text-2xl font-bold text-orange-600">
                 {hoaDonList.filter(h => new Date(h.hanThanhToan) < new Date()).length}
               </p>
@@ -643,7 +643,7 @@ export default function HoaDonPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div className="min-w-0">
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Doanh thu</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Doanh thu</p>
               <p className="text-xs md:text-2xl font-bold text-green-600 truncate">
                 {formatCurrency(hoaDonList.reduce((sum, h) => sum + h.daThanhToan, 0))}
               </p>

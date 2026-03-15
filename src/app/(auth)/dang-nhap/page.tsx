@@ -94,12 +94,12 @@ export default function LoginPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-4xl md:text-5xl font-serif italic text-foreground tracking-tight mb-3"
+            className="text-4xl md:text-5xl font-bold text-foreground tracking-tight mb-3"
           >
-            Đăng nhập <span className="text-primary font-sans not-italic">.</span>
+            Đăng nhập
           </motion.h1>
-          <p className="text-sm text-muted-foreground/60 font-light tracking-widest uppercase">
-            Hệ quản trị lưu trú trung tâm
+          <p className="text-sm text-muted-foreground/60 font-medium tracking-wide">
+            Hệ thống quản lý cư trú hiện đại
           </p>
         </div>
 
@@ -122,7 +122,7 @@ export default function LoginPage() {
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Kênh Email</Label>
+                  <Label htmlFor="email" className="text-xs font-semibold text-muted-foreground ml-1">Email</Label>
                   <div className="relative group">
                     <Input
                       id="email"
@@ -140,7 +140,7 @@ export default function LoginPage() {
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center px-1">
-                    <Label htmlFor="matKhau" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Mã bảo mật</Label>
+                    <Label htmlFor="matKhau" className="text-xs font-semibold text-muted-foreground ml-1">Mật khẩu</Label>
                   </div>
                   <div className="relative group">
                     <Input
@@ -169,12 +169,12 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-16 rounded-[1.5rem] bg-primary text-[11px] font-bold uppercase tracking-[0.2em] shadow-premium hover:shadow-premium-hover transition-all active:scale-[0.98]"
+                className="w-full h-14 rounded-2xl bg-primary text-sm font-bold shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
               >
                 {isLoading ? (
                   <Loader2 className="size-5 animate-spin" />
                 ) : (
-                  'Khai thông hệ thống'
+                  'Đăng nhập'
                 )}
               </Button>
             </form>

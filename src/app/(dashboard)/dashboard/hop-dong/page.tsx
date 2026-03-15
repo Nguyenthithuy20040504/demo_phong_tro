@@ -1096,7 +1096,7 @@ export default function HopDongPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Tổng hợp đồng</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Tổng hợp đồng</p>
               <p className="text-base md:text-2xl font-bold">{hopDongList.length}</p>
             </div>
             <FileText className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />
@@ -1106,7 +1106,7 @@ export default function HopDongPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Hoạt động</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Hoạt động</p>
               <p className="text-base md:text-2xl font-bold text-green-600">
                 {hopDongList.filter(h => h.trangThai === 'hoatDong').length}
               </p>
@@ -1118,7 +1118,7 @@ export default function HopDongPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Sắp hết hạn</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Sắp hết hạn</p>
               <p className="text-base md:text-2xl font-bold text-orange-600">
                 {hopDongList.filter(h => isExpiringSoon(h.ngayKetThuc)).length}
               </p>
@@ -1130,7 +1130,7 @@ export default function HopDongPage() {
         <Card className="p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-gray-600">Đã hết hạn</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Đã hết hạn</p>
               <p className="text-base md:text-2xl font-bold text-red-600">
                 {hopDongList.filter(h => isExpired(h.ngayKetThuc)).length}
               </p>

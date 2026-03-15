@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import * as React from "react"
+import * as React from "react";
 import {
   closestCenter,
   DndContext,
@@ -11,15 +11,15 @@ import {
   useSensors,
   type DragEndEvent,
   type UniqueIdentifier,
-} from "@dnd-kit/core"
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Edit,
   Trash2,
@@ -34,10 +34,14 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  User,
+  CircleCheck,
+  AlertCircle,
+  Image as ImageIcon,
+  Ban,
   Search,
-  LayoutDashboard,
-} from "lucide-react"
+  User,
+  Users,
+} from "lucide-react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -52,28 +56,28 @@ import {
   SortingState,
   useReactTable,
   VisibilityState,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -81,46 +85,89 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import type { Phong, ToaNha } from '@/types'
+} from "@/components/ui/table";
+import type { Phong, ToaNha } from '@/types';
 
-// Helper functions for impeccable styling
+// Helper functions
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('vi-VN', {
-    style: 'decimal',
-  }).format(amount) + ' ₫'
-}
+    style: 'currency',
+    currency: 'VND',
+  }).format(amount);
+};
 
 const getStatusBadge = (status: string) => {
-  const variants: Record<string, { label: string; color: string; dot: string }> = {
-    trong: { label: 'Trống', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', dot: 'bg-emerald-500' },
-    dangThue: { label: 'Đang thuê', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', dot: 'bg-blue-500' },
-    daDat: { label: 'Đã đặt', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', dot: 'bg-amber-500' },
-    baoTri: { label: 'Bảo trì', color: 'bg-rose-500/10 text-rose-600 border-rose-500/20', dot: 'bg-rose-500' },
+  switch (status) {
+    case 'trong':
+      return (
+        <Badge variant="default" className="gap-1 bg-green-600">
+          <CircleCheck className="h-3 w-3" />
+          Trống
+        </Badge>
+      );
+    case 'dangThue':
+      return (
+        <Badge variant="secondary" className="gap-1">
+          <Home className="h-3 w-3" />
+          Đang thuê
+        </Badge>
+      );
+    case 'daDat':
+      return (
+        <Badge variant="outline" className="gap-1 border-orange-600 text-orange-600">
+          <AlertCircle className="h-3 w-3" />
+          Đã đặt
+        </Badge>
+      );
+    case 'baoTri':
+      return (
+        <Badge variant="destructive" className="gap-1">
+          <Ban className="h-3 w-3" />
+          Bảo trì
+        </Badge>
+      );
+    default:
+      return <Badge variant="outline">{status}</Badge>;
   }
+};
 
-  const config = variants[status] || { label: status, color: 'bg-slate-500/10 text-slate-600 border-slate-500/20', dot: 'bg-slate-500' }
-
-  return (
-    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm ${config.color}`}>
-      <span className={`size-1.5 rounded-full animate-pulse ${config.dot}`} />
-      {config.label}
-    </div>
-  )
-}
-
+// Create a separate component for the drag handle
 function DragHandle({ id }: { id: string }) {
-  const { attributes, listeners } = useSortable({ id })
+  const { attributes, listeners } = useSortable({
+    id,
+  });
+
   return (
-    <div
+    <Button
       {...attributes}
       {...listeners}
-      className="p-2 cursor-grab active:cursor-grabbing text-muted-foreground/20 hover:text-primary transition-colors"
+      variant="ghost"
+      size="icon"
+      className="text-muted-foreground size-7 hover:bg-transparent"
     >
-      <GripVertical className="size-4" />
-    </div>
-  )
+      <GripVertical className="text-muted-foreground size-3" />
+      <span className="sr-only">Kéo để sắp xếp</span>
+    </Button>
+  );
 }
+
+type PhongTableProps = {
+  toaNhaList: ToaNha[];
+  onView?: (phong: Phong) => void;
+  onEdit: (phong: Phong) => void;
+  onDelete: (id: string) => void;
+  onViewImages?: (phong: Phong) => void;
+  onViewTenants?: (phong: Phong) => void;
+  canEdit?: boolean;
+};
+
+const getToaNhaName = (toaNha: string | { tenToaNha: string }, toaNhaList: ToaNha[]) => {
+  if (typeof toaNha === 'object' && toaNha?.tenToaNha) {
+    return toaNha.tenToaNha;
+  }
+  const toaNhaObj = toaNhaList.find(t => t._id === toaNha);
+  return toaNhaObj?.tenToaNha || 'N/A';
+};
 
 const createColumns = (props: PhongTableProps): ColumnDef<Phong>[] => [
   {
@@ -130,86 +177,162 @@ const createColumns = (props: PhongTableProps): ColumnDef<Phong>[] => [
     enableHiding: false,
   },
   {
-    accessorKey: "maPhong",
-    header: "SỐ PHÒNG",
+    id: "select",
+    header: ({ table }) => (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Chọn tất cả"
+        />
+      </div>
+    ),
     cell: ({ row }) => (
-      <div className="flex items-center gap-3">
-         <div className="size-8 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10">
-            <Home className="size-4 text-primary" />
-         </div>
-         <span className="font-bold text-sm tracking-tight">{row.original.maPhong}</span>
+      <div className="flex items-center justify-center">
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Chọn hàng"
+        />
+      </div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "maPhong",
+    header: "Mã phòng",
+    cell: ({ row }) => (
+      <div className="min-w-24">
+        <div className="font-medium">{row.original.maPhong}</div>
       </div>
     ),
     enableHiding: false,
   },
   {
     accessorKey: "toaNha",
-    header: "TÒA NHÀ",
-    cell: ({ row }) => {
-        const name = typeof row.original.toaNha === 'object' ? (row.original.toaNha as any).tenToaNha : props.toaNhaList.find(t => t._id === row.original.toaNha)?.tenToaNha;
-        return (
-            <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-medium text-foreground/80">{name || 'N/A'}</span>
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Tầng {row.original.tang}</span>
-            </div>
-        )
-    },
+    header: "Tòa nhà",
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <Building2 className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm">
+          {getToaNhaName(row.original.toaNha, props.toaNhaList)}
+        </span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "tang",
+    header: "Tầng",
+    cell: ({ row }) => (
+      <span className="text-sm">Tầng {row.original.tang}</span>
+    ),
   },
   {
     accessorKey: "dienTich",
-    header: "DIỆN TÍCH",
+    header: () => <div className="text-right">Diện tích</div>,
     cell: ({ row }) => (
-      <span className="text-xs font-mono font-medium text-muted-foreground">
+      <div className="text-right text-sm">
         {row.original.dienTich} m²
-      </span>
+      </div>
     ),
   },
   {
     accessorKey: "giaThue",
-    header: "GIÁ THUÊ",
+    header: () => <div className="text-right">Giá thuê</div>,
     cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-bold text-sm text-primary">
-          {formatCurrency(row.original.giaThue)}
-        </span>
-        <span className="text-[9px] text-muted-foreground/60 uppercase tracking-tighter">Cọc: {formatCurrency(row.original.tienCoc)}</span>
+      <div className="text-right font-medium">
+        {formatCurrency(row.original.giaThue)}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "tienCoc",
+    header: () => <div className="text-right">Tiền cọc</div>,
+    cell: ({ row }) => (
+      <div className="text-right text-sm">
+        {formatCurrency(row.original.tienCoc)}
       </div>
     ),
   },
   {
     accessorKey: "trangThai",
-    header: "TRẠNG THÁI",
+    header: "Trạng thái",
     cell: ({ row }) => getStatusBadge(row.original.trangThai),
   },
   {
     accessorKey: "nguoiThue",
-    header: "NGƯỜI THUÊ",
+    header: "Người thuê",
     cell: ({ row }) => {
       const phong = row.original as any;
       const hopDong = phong.hopDongHienTai;
       
       if (!hopDong || !hopDong.khachThueId || hopDong.khachThueId.length === 0) {
-        return <span className="text-[10px] italic text-muted-foreground/40 font-medium">Chưa vận hành</span>;
+        return (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <User className="h-4 w-4" />
+            <span className="text-sm">Chưa cho thuê</span>
+          </div>
+        );
       }
       
       const nguoiDaiDien = hopDong.nguoiDaiDien;
-      const soLuong = hopDong.khachThueId.length;
+      const soLuongKhachThue = hopDong.khachThueId.length;
       
       return (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="size-5 rounded-full bg-blue-500/10 flex items-center justify-center">
-                <User className="size-3 text-blue-600" />
+        <div className="min-w-40">
+          <div className="flex items-center gap-2 mb-1">
+            {soLuongKhachThue > 1 ? (
+              <Users className="h-4 w-4 text-blue-600" />
+            ) : (
+              <User className="h-4 w-4 text-blue-600" />
+            )}
+            <div>
+              <div className="text-sm font-medium">
+                {nguoiDaiDien?.hoTen || 'N/A'}
+              </div>
+              {nguoiDaiDien?.soDienThoai && (
+                <div className="text-xs text-muted-foreground">
+                  {nguoiDaiDien.soDienThoai}
+                </div>
+              )}
             </div>
-            <span className="text-xs font-bold text-foreground/80">{nguoiDaiDien?.hoTen || 'Khách thuê'}</span>
           </div>
-          {soLuong > 1 && (
-            <button 
-                onClick={() => props.onViewTenants?.(row.original)}
-                className="text-[9px] font-bold text-blue-500/60 uppercase tracking-widest hover:text-blue-500 transition-colors pl-7"
+          {soLuongKhachThue > 1 && (
+            <Button
+              variant="link"
+              size="sm"
+              className="text-xs text-blue-600 hover:text-blue-700 h-auto p-0 pl-6"
+              onClick={() => props.onViewTenants?.(row.original)}
             >
-                +{soLuong - 1} người khác
-            </button>
+              +{soLuongKhachThue - 1} người ở cùng
+            </Button>
+          )}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "anhPhong",
+    header: "Ảnh",
+    cell: ({ row }) => {
+      const imageCount = row.original.anhPhong?.length || 0;
+      return (
+        <div>
+          {imageCount > 0 ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => props.onViewImages?.(row.original)}
+            >
+              <ImageIcon className="h-4 w-4 mr-1" />
+              {imageCount}
+            </Button>
+          ) : (
+            <span className="text-muted-foreground text-sm">-</span>
           )}
         </div>
       );
@@ -217,117 +340,123 @@ const createColumns = (props: PhongTableProps): ColumnDef<Phong>[] => [
   },
   {
     id: "actions",
-    header: "",
     cell: ({ row }) => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="size-8 rounded-full hover:bg-secondary/50">
-            <MoreVertical className="size-4 text-muted-foreground/40" />
+          <Button
+            variant="ghost"
+            className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+            size="icon"
+          >
+            <MoreVertical className="size-4" />
+            <span className="sr-only">Mở menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 bg-background/80 backdrop-blur-xl border-border/40 p-2 rounded-2xl shadow-premium">
-          <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-3 py-2">Thao tác nghiệp vụ</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => props.onEdit(row.original)} className="gap-3 px-3 py-2.5 rounded-xl cursor-pointer">
-            <Edit className="size-4 text-primary/60" />
-            <span className="text-xs font-semibold">Hiệu chỉnh thông tin</span>
-          </DropdownMenuItem>
-          {row.original.anhPhong && row.original.anhPhong.length > 0 && (
-            <DropdownMenuItem onClick={() => props.onViewImages?.(row.original)} className="gap-3 px-3 py-2.5 rounded-xl cursor-pointer">
-               <LayoutDashboard className="size-4 text-blue-500/60" />
-               <span className="text-xs font-semibold text-blue-600">Thư viện hình ảnh</span>
+        <DropdownMenuContent align="end" className="w-48">
+          {props.onView && (
+            <DropdownMenuItem onClick={() => props.onView!(row.original)}>
+              <Eye className="mr-2 h-4 w-4" />
+              Xem chi tiết
             </DropdownMenuItem>
           )}
-          <DropdownMenuSeparator className="bg-border/40 my-1" />
-          <DropdownMenuItem 
-            onClick={() => props.onDelete(row.original._id!)} 
-            className="gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-destructive focus:bg-destructive/5"
-          >
-            <Trash2 className="size-4" />
-            <span className="text-xs font-semibold uppercase tracking-widest">Xóa phòng</span>
-          </DropdownMenuItem>
+          {row.original.anhPhong && row.original.anhPhong.length > 0 && (
+            <DropdownMenuItem onClick={() => props.onViewImages?.(row.original)}>
+              <ImageIcon className="mr-2 h-4 w-4" />
+              Xem ảnh ({row.original.anhPhong.length})
+            </DropdownMenuItem>
+          )}
+          {props.canEdit !== false && (
+            <DropdownMenuItem onClick={() => props.onEdit(row.original)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Chỉnh sửa
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          {props.canEdit !== false && (
+            <DropdownMenuItem 
+              className="text-destructive"
+              onClick={() => props.onDelete(row.original._id!)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Xóa
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     ),
+    enableHiding: false,
   },
-]
-
-type PhongTableProps = {
-  toaNhaList: ToaNha[]
-  onView?: (phong: Phong) => void
-  onEdit: (phong: Phong) => void
-  onDelete: (id: string) => void
-  onViewImages?: (phong: Phong) => void
-  onViewTenants?: (phong: Phong) => void
-  canEdit?: boolean
-}
+];
 
 function DraggableRow({ row }: { row: Row<Phong> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original._id!,
-  })
+  });
 
   return (
     <TableRow
-      ref={setNodeRef}
       data-state={row.getIsSelected() && "selected"}
-      className={`group relative transition-all duration-300 border-b border-border/20 hover:bg-primary/[0.02] ${isDragging ? 'opacity-50 scale-[0.98] blur-[2px] z-50' : 'z-0'}`}
+      data-dragging={isDragging}
+      ref={setNodeRef}
+      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
       style={{
         transform: CSS.Transform.toString(transform),
-        transition,
+        transition: transition,
       }}
     >
       {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id} className="py-4">
+        <TableCell key={cell.id}>
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
       ))}
     </TableRow>
-  )
+  );
 }
 
 type PhongDataTableProps = PhongTableProps & {
-  data: Phong[]
-  searchTerm?: string
-  onSearchChange?: (value: string) => void
-  selectedToaNha?: string
-  onToaNhaChange?: (value: string) => void
-  selectedTrangThai?: string
-  onTrangThaiChange?: (value: string) => void
-  allToaNhaList?: ToaNha[]
-}
+  data: Phong[];
+  searchTerm?: string;
+  onSearchChange?: (value: string) => void;
+  selectedToaNha?: string;
+  onToaNhaChange?: (value: string) => void;
+  selectedTrangThai?: string;
+  onTrangThaiChange?: (value: string) => void;
+  allToaNhaList?: ToaNha[];
+};
 
 export function PhongDataTable(props: PhongDataTableProps) {
-  const { 
-    data: initialData, 
-    searchTerm, 
-    onSearchChange, 
-    selectedToaNha, 
-    onToaNhaChange, 
-    selectedTrangThai, 
-    onTrangThaiChange, 
-    allToaNhaList, 
-    ...tableProps 
-  } = props
+  const { data: initialData, searchTerm, onSearchChange, selectedToaNha, onToaNhaChange, selectedTrangThai, onTrangThaiChange, allToaNhaList, ...tableProps } = props;
+  const [data, setData] = React.useState(() => initialData);
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
   
-  const [data, setData] = React.useState(() => initialData)
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  
+  // Sync data when prop changes
   React.useEffect(() => {
-    setData(initialData)
-  }, [initialData])
+    setData(initialData);
+  }, [initialData]);
   
-  const columns = React.useMemo(() => createColumns(tableProps), [tableProps])
+  const columns = React.useMemo(() => createColumns(tableProps), [tableProps]);
+  
+  const sortableId = React.useId();
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
     useSensor(KeyboardSensor, {})
-  )
+  );
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => data?.map(({ _id }) => _id!) || [],
     [data]
-  )
+  );
 
   const table = useReactTable({
     data,
@@ -335,132 +464,163 @@ export function PhongDataTable(props: PhongDataTableProps) {
     state: {
       sorting,
       columnVisibility,
+      rowSelection,
+      columnFilters,
+      pagination,
     },
+    getRowId: (row) => row._id!,
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-  })
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+  });
 
   function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
+    const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id)
-        const newIndex = dataIds.indexOf(over.id)
-        return arrayMove(data, oldIndex, newIndex)
-      })
+        const oldIndex = dataIds.indexOf(active.id);
+        const newIndex = dataIds.indexOf(over.id);
+        return arrayMove(data, oldIndex, newIndex);
+      });
     }
   }
 
+  const selectedCount = table.getFilteredSelectedRowModel().rows.length;
+
   return (
-    <div className="w-full space-y-8">
-      <div className="flex flex-col md:flex-row items-end justify-between gap-6 pb-4 border-b border-border/20">
-        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
-          <div className="relative group flex-1 md:w-80">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
-            <Input
-              placeholder="Tìm kiếm mã phòng, ghi chú..."
-              value={searchTerm || ''}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-              className="pl-11 h-12 bg-secondary/20 border-transparent rounded-2xl focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium"
-            />
+    <div className="w-full space-y-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        {/* Tìm kiếm và Bộ lọc bên trái */}
+        <div className="flex flex-col sm:flex-row gap-3 flex-1 w-full">
+          <div className="flex-1 sm:max-w-xs">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Tìm kiếm theo mã phòng, mô tả..."
+                value={searchTerm || ''}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                className="pl-10"
+              />
+            </div>
           </div>
-          
           <Select value={selectedToaNha} onValueChange={onToaNhaChange}>
-            <SelectTrigger className="w-full md:w-48 h-12 rounded-2xl bg-secondary/20 border-transparent text-xs font-bold uppercase tracking-widest text-muted-foreground/80 hover:bg-secondary/40 transition-all">
-               <SelectValue placeholder="Toàn bộ Tòa nhà" />
+            <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectValue placeholder="Chọn tòa nhà" />
             </SelectTrigger>
-            <SelectContent className="bg-background/80 backdrop-blur-xl border-border/40 rounded-2xl p-2">
-              <SelectItem value="all" className="rounded-xl text-xs font-bold uppercase tracking-widest">Toàn bộ Tòa nhà</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">Tất cả tòa nhà</SelectItem>
               {allToaNhaList?.map((toaNha) => (
-                <SelectItem key={toaNha._id} value={toaNha._id!} className="rounded-xl text-xs font-medium">
+                <SelectItem key={toaNha._id} value={toaNha._id!}>
                   {toaNha.tenToaNha}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-
           <Select value={selectedTrangThai} onValueChange={onTrangThaiChange}>
-            <SelectTrigger className="w-full md:w-40 h-12 rounded-2xl bg-secondary/20 border-transparent text-xs font-bold uppercase tracking-widest text-muted-foreground/80 hover:bg-secondary/40 transition-all">
-               <SelectValue placeholder="Trạng thái" />
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
-            <SelectContent className="bg-background/80 backdrop-blur-xl border-border/40 rounded-2xl p-2">
-              <SelectItem value="all" className="rounded-xl text-xs font-bold uppercase tracking-widest">Tất cả</SelectItem>
-              <SelectItem value="trong" className="rounded-xl text-xs font-bold uppercase tracking-widest text-emerald-600">Trống</SelectItem>
-              <SelectItem value="daDat" className="rounded-xl text-xs font-bold uppercase tracking-widest text-amber-600">Đã đặt</SelectItem>
-              <SelectItem value="dangThue" className="rounded-xl text-xs font-bold uppercase tracking-widest text-blue-600">Đang thuê</SelectItem>
-              <SelectItem value="baoTri" className="rounded-xl text-xs font-bold uppercase tracking-widest text-rose-600">Bảo trì</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="trong">Trống</SelectItem>
+              <SelectItem value="daDat">Đã đặt</SelectItem>
+              <SelectItem value="dangThue">Đang thuê</SelectItem>
+              <SelectItem value="baoTri">Bảo trì</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="flex items-center gap-3">
-            <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em]">Tổng số phòng: {table.getFilteredRowModel().rows.length}</span>
-            <div className="h-4 w-px bg-border/40 mx-2" />
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="size-10 rounded-2xl bg-secondary/20 hover:bg-secondary/40">
-                    <Columns className="size-4 text-muted-foreground" />
-                </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-background/80 backdrop-blur-xl border-border/40 p-2 rounded-2xl">
-                    <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-3 py-2">Cấu hình hiển thị</DropdownMenuLabel>
-                    {table
-                        .getAllColumns()
-                        .filter(c => typeof c.accessorFn !== "undefined" && c.getCanHide())
-                        .map(column => (
-                            <DropdownMenuCheckboxItem
-                                key={column.id}
-                                className="rounded-xl capitalize text-xs font-medium px-3 py-2"
-                                checked={column.getIsVisible()}
-                                onCheckedChange={v => column.toggleVisibility(!!v)}
-                            >
-                                {column.id}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
+        {/* Tùy chỉnh cột bên phải */}
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Columns className="mr-2 h-4 w-4" />
+                <span className="hidden lg:inline">Tùy chỉnh cột</span>
+                <span className="lg:hidden">Cột</span>
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {table
+                .getAllColumns()
+                .filter(
+                  (column) =>
+                    typeof column.accessorFn !== "undefined" &&
+                    column.getCanHide()
+                )
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
-      <div className="relative group">
+      <div className="overflow-hidden rounded-lg border">
         <DndContext
           collisionDetection={closestCenter}
           modifiers={[restrictToVerticalAxis]}
           onDragEnd={handleDragEnd}
           sensors={sensors}
+          id={sortableId}
         >
           <Table>
-            <TableHeader className="bg-transparent border-none">
-              {table.getHeaderGroups().map((group) => (
-                <TableRow key={group.id} className="hover:bg-transparent border-none">
-                  {group.headers.map((header) => (
-                    <TableHead key={header.id} className="h-12 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/40">
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  ))}
+            <TableHeader className="bg-muted sticky top-0 z-10">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableHeader>
-            <TableBody className="border-none">
+            <TableBody className="**:data-[slot=table-cell]:first:w-8">
               {table.getRowModel().rows?.length ? (
-                <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
+                <SortableContext
+                  items={dataIds}
+                  strategy={verticalListSortingStrategy}
+                >
                   {table.getRowModel().rows.map((row) => (
                     <DraggableRow key={row.id} row={row} />
                   ))}
                 </SortableContext>
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-[400px] text-center">
-                    <div className="flex flex-col items-center justify-center gap-4 opacity-40">
-                         <div className="size-16 rounded-full bg-secondary/20 flex items-center justify-center">
-                            <Home className="size-8" />
-                         </div>
-                         <span className="text-xs font-bold uppercase tracking-widest">Không có dữ liệu phòng</span>
-                    </div>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Không có dữ liệu
                   </TableCell>
                 </TableRow>
               )}
@@ -469,44 +629,86 @@ export function PhongDataTable(props: PhongDataTableProps) {
         </DndContext>
       </div>
       
-      <div className="flex items-center justify-between pt-8">
-        <div className="flex items-center gap-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Trang {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}</span>
-            <div className="flex items-center gap-1.5">
-                {[10, 20, 50].map((size) => (
-                    <button
-                        key={size}
-                        onClick={() => table.setPageSize(size)}
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${table.getState().pagination.pageSize === size ? 'bg-primary text-primary-foreground shadow-premium' : 'bg-secondary hover:bg-secondary/80 text-muted-foreground'}`}
-                    >
-                        {size}
-                    </button>
-                ))}
-            </div>
+      <div className="flex items-center justify-between px-4">
+        <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+          {selectedCount > 0 ? (
+            <>Đã chọn {selectedCount} trong {table.getFilteredRowModel().rows.length} hàng</>
+          ) : (
+            <>Hiển thị {table.getFilteredRowModel().rows.length} hàng</>
+          )}
         </div>
-
-        <div className="flex items-center gap-2">
+        <div className="flex w-full items-center gap-8 lg:w-fit">
+          <div className="hidden items-center gap-2 lg:flex">
+            <Label htmlFor="rows-per-page" className="text-sm font-medium">
+              Số hàng mỗi trang
+            </Label>
+            <Select
+              value={`${table.getState().pagination.pageSize}`}
+              onValueChange={(value) => {
+                table.setPageSize(Number(value));
+              }}
+            >
+              <SelectTrigger size="sm" className="w-20" id="rows-per-page">
+                <SelectValue
+                  placeholder={table.getState().pagination.pageSize}
+                />
+              </SelectTrigger>
+              <SelectContent side="top">
+                {[10, 20, 30, 40, 50].map((pageSize) => (
+                  <SelectItem key={pageSize} value={`${pageSize}`}>
+                    {pageSize}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex w-fit items-center justify-center text-sm font-medium">
+            Trang {table.getState().pagination.pageIndex + 1} /{" "}
+            {table.getPageCount()}
+          </div>
+          <div className="ml-auto flex items-center gap-2 lg:ml-0">
             <Button
               variant="outline"
+              className="hidden h-8 w-8 p-0 lg:flex"
+              onClick={() => table.setPageIndex(0)}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <span className="sr-only">Trang đầu</span>
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              className="size-8"
               size="icon"
-              className="size-10 rounded-full border-border/40 hover:bg-primary/5 group"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              <ChevronLeft className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="sr-only">Trang trước</span>
+              <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
+              className="size-8"
               size="icon"
-              className="size-10 rounded-full border-border/40 hover:bg-primary/5 group"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="sr-only">Trang sau</span>
+              <ChevronRight className="h-4 w-4" />
             </Button>
+            <Button
+              variant="outline"
+              className="hidden size-8 lg:flex"
+              size="icon"
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              disabled={!table.getCanNextPage()}
+            >
+              <span className="sr-only">Trang cuối</span>
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
-

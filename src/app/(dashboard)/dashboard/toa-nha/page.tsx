@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCache } from '@/hooks/use-cache';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
@@ -28,31 +28,6 @@ import { ToaNha } from '@/types';
 import { toast } from 'sonner';
 import { ToaNhaDataTable } from './table';
 
-import { Variants } from 'framer-motion';
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.8,
-      ease: [0.22, 1, 0.36, 1]
-    }
-  } as any
-};
-
 export default function ToaNhaPage() {
   const { data: session } = useSession();
   const isNhanVien = session?.user?.role === 'nhanVien';
@@ -64,7 +39,7 @@ export default function ToaNhaPage() {
   const [editingToaNha, setEditingToaNha] = useState<ToaNha | null>(null);
 
   useEffect(() => {
-    document.title = 'Quản lý Tòa nhà | Impeccable';
+    document.title = 'Quản lý Tòa nhà';
   }, []);
 
   useEffect(() => {
@@ -103,7 +78,7 @@ export default function ToaNhaPage() {
     cache.setIsRefreshing(true);
     await fetchToaNha(true);
     cache.setIsRefreshing(false);
-    toast.success('Dữ liệu hệ thống đã được cập nhật');
+    toast.success('Dữ liệu đã được cập nhật mới nhất!');
   };
 
   const filteredToaNha = toaNhaList.filter(toaNha =>
@@ -142,127 +117,127 @@ export default function ToaNhaPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <RefreshCw className="h-8 w-8 animate-spin text-primary/20" />
-        <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-muted-foreground/40">Đang tải dữ liệu...</span>
+        <span className="text-sm text-muted-foreground">Đang tải dữ liệu...</span>
       </div>
     );
   }
 
   return (
-    <motion.div 
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="max-w-[1400px] mx-auto space-y-16"
-    >
-      {/* Header Editorial Section */}
-      <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-end gap-8">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-             <div className="h-px w-8 bg-primary/40" />
-             <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-primary/60">Quản lý hệ thống</span>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-heading font-bold tracking-tight text-foreground">
-            Danh sách <span className="text-primary italic">Tòa nhà</span>
+    <div className="space-y-4 md:space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
+            Quản lý tòa nhà
           </h1>
-          <p className="text-muted-foreground/60 max-w-md text-sm leading-relaxed">
-            Quản lý thông tin các tòa nhà, tối ưu hóa quy trình vận hành và theo dõi tỷ lệ cho thuê thực tế.
+          <p className="text-xs md:text-sm text-gray-600">
+            Danh sách tất cả tòa nhà trong hệ thống
           </p>
         </div>
         
-        <div className="flex gap-4">
+        <div className="flex gap-2 w-full sm:w-auto">
           <Button 
             variant="outline"
-            size="lg"
+            size="sm"
             onClick={handleRefresh}
             disabled={cache.isRefreshing}
-            className="rounded-full h-14 px-8 border-border/40 hover:bg-primary/5 font-bold uppercase tracking-widest text-[10px]"
+            className="flex-1 sm:flex-none"
           >
-            <RefreshCw className={`h-4 w-4 mr-3 ${cache.isRefreshing ? 'animate-spin' : ''}`} />
-            Tải mới
+            <RefreshCw className={`h-4 w-4 mr-2 ${cache.isRefreshing ? 'animate-spin' : ''}`} />
+            {cache.isRefreshing ? 'Đang tải...' : 'Làm mới'}
           </Button>
           {!isNhanVien && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="lg" onClick={() => setEditingToaNha(null)} className="rounded-full h-14 px-10 font-bold uppercase tracking-widest text-[10px] shadow-premium">
-                  <Plus className="h-4 w-4 mr-3" />
+                <Button size="sm" onClick={() => setEditingToaNha(null)} className="flex-1 sm:flex-none">
+                  <Plus className="h-4 w-4 mr-2" />
                   Thêm Tòa nhà
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-xl bg-background/90 backdrop-blur-2xl border-border/40 rounded-2xl p-0 max-h-[90vh] flex flex-col">
-                <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/20 flex-shrink-0">
-                  <DialogTitle className="text-xl font-heading font-bold">
+              <DialogContent className="max-w-xl">
+                <DialogHeader>
+                  <DialogTitle>
                     {editingToaNha ? 'Cập nhật Tòa nhà' : 'Thêm Tòa nhà mới'}
                   </DialogTitle>
-                  <DialogDescription className="text-xs">
+                  <DialogDescription>
                     {editingToaNha ? 'Cập nhật thông tin cho tòa nhà này.' : 'Nhập các thông số cơ bản để tạo một tòa nhà mới.'}
                   </DialogDescription>
                 </DialogHeader>
                 
-                <div className="overflow-y-auto flex-1 px-6">
-                  <ToaNhaForm 
-                    toaNha={editingToaNha}
-                    onClose={() => setIsDialogOpen(false)}
-                    onSuccess={() => {
-                      cache.clearCache();
-                      setIsDialogOpen(false);
-                      fetchToaNha(true);
-                    }}
-                  />
-                </div>
+                <ToaNhaForm 
+                  toaNha={editingToaNha}
+                  onClose={() => setIsDialogOpen(false)}
+                  onSuccess={() => {
+                    cache.clearCache();
+                    setIsDialogOpen(false);
+                    fetchToaNha(true);
+                  }}
+                />
               </DialogContent>
             </Dialog>
           )}
         </div>
-      </motion.div>
+      </div>
 
       {/* Stats Summary Panel */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="p-8 rounded-3xl bg-primary/5 border border-primary/10 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-5 transition-transform group-hover:scale-110">
-            <Building2 className="size-24" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 md:gap-4 lg:gap-6">
+        <Card className="p-2 md:p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Tổng tòa nhà</p>
+              <p className="text-base md:text-2xl font-bold">{toaNhaList.length}</p>
+            </div>
+            <Building2 className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />
           </div>
-          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-primary/60">TỔNG SỐ TÒA NHÀ</span>
-          <p className="text-5xl font-bold mt-2 tracking-tighter">{toaNhaList.length}</p>
-          <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-primary italic">
-             <span>Đang được quản lý</span>
-          </div>
-        </div>
+        </Card>
         
-        <div className="p-8 rounded-3xl bg-secondary/30 border border-border/40 relative overflow-hidden">
-             <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/60">PHÒNG TRỐNG</span>
-             <p className="text-5xl font-bold mt-2 tracking-tighter text-green-600/80">
+        <Card className="p-2 md:p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Phòng trống</p>
+              <p className="text-base md:text-2xl font-bold text-green-600">
                 {toaNhaList.reduce((sum, toaNha) => sum + ((toaNha as any).phongTrong || 0), 0)}
-             </p>
-             <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-green-600 italic">
-                <span>Phòng chưa cho thuê</span>
-             </div>
-        </div>
+              </p>
+            </div>
+            <Building2 className="h-3 w-3 md:h-4 md:w-4 text-green-600" />
+          </div>
+        </Card>
 
-        <div className="p-8 rounded-3xl bg-secondary/30 border border-border/40 relative overflow-hidden">
-             <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/60">ĐANG CHO THUÊ</span>
-             <p className="text-5xl font-bold mt-2 tracking-tighter text-blue-600/80">
+        <Card className="p-2 md:p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Đang cho thuê</p>
+              <p className="text-base md:text-2xl font-bold text-blue-600">
                 {toaNhaList.reduce((sum, toaNha) => sum + ((toaNha as any).phongDangThue || 0), 0)}
-             </p>
-             <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-blue-600 italic">
-                <span>Vận hành ổn định</span>
-             </div>
-        </div>
-      </motion.div>
+              </p>
+            </div>
+            <Building2 className="h-3 w-3 md:h-4 md:w-4 text-blue-600" />
+          </div>
+        </Card>
+
+        <Card className="p-2 md:p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] md:text-xs font-medium text-gray-600 uppercase tracking-wider">Tình trạng</p>
+              <p className="text-base md:text-2xl font-bold text-purple-600">
+                {Math.round((toaNhaList.reduce((sum, toaNha) => sum + ((toaNha as any).phongDangThue || 0), 0) / (toaNhaList.reduce((sum, toaNha) => sum + toaNha.tongSoPhong, 0) || 1)) * 100)}%
+              </p>
+            </div>
+            <RefreshCw className="h-3 w-3 md:h-4 md:w-4 text-purple-600" />
+          </div>
+        </Card>
+      </div>
 
       {/* Main Table Interface */}
-      <motion.div variants={itemVariants} className="bg-background/40 backdrop-blur-md rounded-3xl border border-border/20 overflow-hidden">
-        <div className="p-8">
-           <ToaNhaDataTable
-            data={filteredToaNha}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            canEdit={!isNhanVien}
-          />
-        </div>
-      </motion.div>
-    </motion.div>
+      <ToaNhaDataTable
+        data={filteredToaNha}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        canEdit={!isNhanVien}
+      />
+    </div>
   );
 }
 
