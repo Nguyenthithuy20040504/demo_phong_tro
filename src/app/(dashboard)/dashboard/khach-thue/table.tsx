@@ -312,6 +312,28 @@ const createColumns = (props: KhachThueTableProps): ColumnDef<KhachThue>[] => [
     },
   },
   {
+    accessorKey: "anhCCCD",
+    header: "Ảnh CCCD",
+    cell: ({ row }) => {
+      const anhCCCD = row.original.anhCCCD;
+      const hasFront = !!anhCCCD?.matTruoc;
+      const hasBack = !!anhCCCD?.matSau;
+      
+      if (!hasFront && !hasBack) return <span className="text-muted-foreground text-sm">-</span>;
+      
+      return (
+        <div className="flex gap-1">
+          <Badge variant={hasFront ? "default" : "outline"} className="text-[10px] px-1 h-5">
+            {hasFront ? "Mặt trước OK" : "Thiếu trước"}
+          </Badge>
+          <Badge variant={hasBack ? "default" : "outline"} className="text-[10px] px-1 h-5">
+            {hasBack ? "Mặt sau OK" : "Thiếu sau"}
+          </Badge>
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "trangThai",
     header: "Trạng thái",
     cell: ({ row }) => getStatusBadge(row.original.trangThai),
